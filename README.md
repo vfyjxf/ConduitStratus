@@ -1,2 +1,2 @@
-# CompositeConduit-
-A minecaft conduit mod
+# CompositeConduit
+A minecraft conduit mod
