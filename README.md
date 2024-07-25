@@ -1,2 +1,2 @@
-# CompositeConduit
+# Conduit Stratus
 A minecraft conduit mod

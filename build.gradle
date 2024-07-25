@@ -3,7 +3,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '0.1.131'
+    id 'net.neoforged.moddev' version '1.0.14'
 }
 
 tasks.named('wrapper', Wrapper).configure {
@@ -109,9 +109,9 @@ configurations {
 
 dependencies {
     localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
-    clientAdditionalRuntimeClasspath(implementation("org.eclipse.collections:eclipse-collections-api:11.1.0"))
+    additionalRuntimeClasspath(implementation("org.eclipse.collections:eclipse-collections-api:11.1.0"))
     jarJar "org.eclipse.collections:eclipse-collections-api:[11.1.0,)"
-    clientAdditionalRuntimeClasspath(implementation("org.eclipse.collections:eclipse-collections:11.1.0"))
+    additionalRuntimeClasspath(implementation("org.eclipse.collections:eclipse-collections:11.1.0"))
     jarJar "org.eclipse.collections:eclipse-collections:[11.1.0,)"
 }
 
@@ -134,6 +134,7 @@ tasks.withType(ProcessResources).configureEach {
     filesMatching(['META-INF/neoforge.mods.toml']) {
         expand replaceProperties
     }
+    exclueStrategies.add(1, 'com.neoforged.gradle.tasks.ExcludeStrategy')
 }
 
 publishing {

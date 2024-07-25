@@ -1,9 +1,9 @@
 package dev.vfyjxf.conduitstratus.api.event;
 
 
-public interface IEventHandler<E extends IEventHandler<E>> {
+public interface IEventHandler<T> {
 
-    IEventChannel<E> channel();
+    IEventChannel<T> channel();
 
     default IEventContext.Common common() {
         return channel().context();
@@ -17,20 +17,20 @@ public interface IEventHandler<E extends IEventHandler<E>> {
         return channel().interruptible();
     }
 
-    default <T> T listeners(IEventDefinition<T> definition) {
+    default <E extends T> E listeners(IEventDefinition<E> definition) {
         return channel().get(definition).invoker();
     }
 
 
-    default <T> T register(IEventDefinition<T> definition, T listener) {
+    default <E extends T> E register(IEventDefinition<E> definition, E listener) {
         return channel().get(definition).register(listener);
     }
 
-    default <T> void unregister(IEventDefinition<T> definition, T listener) {
+    default <E extends T> void unregister(IEventDefinition<E> definition, E listener) {
         channel().get(definition).unregister(listener);
     }
 
-    default <T> void clear(IEventDefinition<T> definition) {
+    default <E extends T> void clear(IEventDefinition<E> definition) {
         channel().get(definition).clearListeners();
     }
 

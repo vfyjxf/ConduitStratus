@@ -1,26 +1,26 @@
 package dev.vfyjxf.conduitstratus.api.event;
 
-public interface IEventChannel<E extends IEventHandler<E>> {
+public interface IEventChannel<T> {
 
-    IEventHandler<E> handler();
+    IEventHandler<T> handler();
 
-    default IEventContext.Common context(){
+    default IEventContext.Common context() {
         return new IEventContext.Common(this);
     }
 
-    default IEventContext.Cancelable cancelable(){
+    default IEventContext.Cancelable cancelable() {
         return new IEventContext.Cancelable(this);
     }
 
-    default IEventContext.Interruptible interruptible(){
+    default IEventContext.Interruptible interruptible() {
         return new IEventContext.Interruptible(this);
     }
 
-    default <T> void register(IEventDefinition<T> definition, T listener) {
+    default <E extends T> void register(IEventDefinition<E> definition, E listener) {
         get(definition).register(listener);
     }
 
-    <T> IEvent<T> get(IEventDefinition<T> definition);
+    <E extends T> IEvent<E> get(IEventDefinition<E> definition);
 
     void clearAllListeners();
 

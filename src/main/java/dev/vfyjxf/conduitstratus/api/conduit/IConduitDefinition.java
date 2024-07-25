@@ -1,4 +1,14 @@
 package dev.vfyjxf.conduitstratus.api.conduit;
 
-public interface IConduitDefinition<T> {
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+
+public interface IConduitDefinition {
+
+    Item getConduitItem();
+
+    default ItemStack createStack(int count) {
+        return new ItemStack(getConduitItem(), count);
+    }
+
 }
