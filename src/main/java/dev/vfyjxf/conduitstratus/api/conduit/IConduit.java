@@ -1,7 +1,6 @@
 package dev.vfyjxf.conduitstratus.api.conduit;
 
 import dev.vfyjxf.conduitstratus.api.conduit.trait.IConduitTrait;
-import org.eclipse.collections.api.list.MutableList;
 
 public interface IConduit {
 
@@ -11,7 +10,6 @@ public interface IConduit {
 
     boolean acceptsTrait(IConduitTrait<?> trait);
 
-    <TYPE> MutableList<IConduitTrait<TYPE>> getTraits(ITypeDefinition<TYPE> type);
-
+    boolean connectable(IConduit another);
 
 }

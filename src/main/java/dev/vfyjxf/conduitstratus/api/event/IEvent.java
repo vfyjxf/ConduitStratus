@@ -1,8 +1,5 @@
 package dev.vfyjxf.conduitstratus.api.event;
 
-/**
- * Architectury like event system.
- */
 public interface IEvent<T> {
 
     T invoker();

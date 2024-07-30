@@ -20,6 +20,10 @@ public interface IEventChannel<T> {
         get(definition).register(listener);
     }
 
+    default <E extends T> void unregister(IEventDefinition<E> definition) {
+        get(definition).clearListeners();
+    }
+
     <E extends T> IEvent<E> get(IEventDefinition<E> definition);
 
     void clearAllListeners();

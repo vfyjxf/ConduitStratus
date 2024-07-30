@@ -1,6 +1,6 @@
 package dev.vfyjxf.conduitstratus.api.conduit.network;
 
-//32 color
+
 public enum ChannelColor {
     RED(0xFF0000),
     ORANGE(0xFFA500),

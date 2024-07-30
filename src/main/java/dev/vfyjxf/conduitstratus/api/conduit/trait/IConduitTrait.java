@@ -1,17 +1,19 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
-import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import dev.vfyjxf.conduitstratus.api.conduit.ConduitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.IConduit;
-import dev.vfyjxf.conduitstratus.api.conduit.ITypeDefinition;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Contract;
 
 /**
- * The ability of handling a specific type of data.
+ * The capability of a {@link IConduit} to handle data. such as {@link ItemStack}s, {@link FluidStack}s, etc.
  */
 public interface IConduitTrait<T> {
 
-    IConduit getHost();
+    ConduitTraitType<T> getType();
+
+    IConduit getHolder();
 
     ConduitIO getIO();
 
@@ -19,14 +21,9 @@ public interface IConduitTrait<T> {
      * @param conduitIO the io
      * @return this
      */
-    @CanIgnoreReturnValue
     @Contract("_ -> this")
     IConduitTrait<T> setIO(ConduitIO conduitIO);
 
-    ITypeDefinition<T> handleType();
-
-    default boolean support(Class<?> type) {
-        return handleType().support(type);
-    }
+    boolean handle();
 
 }

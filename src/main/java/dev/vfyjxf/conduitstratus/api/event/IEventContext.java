@@ -1,8 +1,11 @@
 package dev.vfyjxf.conduitstratus.api.event;
 
+import org.jetbrains.annotations.ApiStatus;
+
 public sealed interface IEventContext permits IEventContext.Common, IEventContext.Cancelable, IEventContext.Interruptible {
 
-    IEventChannel getChannel();
+    @ApiStatus.Internal
+    IEventChannel<?> getChannel();
 
     @SuppressWarnings("unchecked")
     default <T> T holder() {
@@ -13,18 +16,21 @@ public sealed interface IEventContext permits IEventContext.Common, IEventContex
 
     boolean interrupted();
 
+    /**
+     * Cancellable/Interruptible
+     */
     final class Common implements IEventContext {
 
-        private final IEventChannel channel;
+        private final IEventChannel<?> channel;
         private boolean cancelled = false;
         private boolean interrupted = false;
 
-        public Common(IEventChannel channel) {
+        public Common(IEventChannel<?> channel) {
             this.channel = channel;
         }
 
         @Override
-        public IEventChannel getChannel() {
+        public IEventChannel<?> getChannel() {
             return channel;
         }
 
@@ -50,15 +56,15 @@ public sealed interface IEventContext permits IEventContext.Common, IEventContex
 
     final class Cancelable implements IEventContext {
 
-        private final IEventChannel channel;
+        private final IEventChannel<?> channel;
         private boolean cancelled = false;
 
-        public Cancelable(IEventChannel channel) {
+        public Cancelable(IEventChannel<?> channel) {
             this.channel = channel;
         }
 
         @Override
-        public IEventChannel getChannel() {
+        public IEventChannel<?> getChannel() {
             return channel;
         }
 
@@ -80,15 +86,15 @@ public sealed interface IEventContext permits IEventContext.Common, IEventContex
 
     final class Interruptible implements IEventContext {
 
-        private final IEventChannel channel;
+        private final IEventChannel<?> channel;
         private boolean interrupted = false;
 
-        public Interruptible(IEventChannel channel) {
+        public Interruptible(IEventChannel<?> channel) {
             this.channel = channel;
         }
 
         @Override
-        public IEventChannel getChannel() {
+        public IEventChannel<?> getChannel() {
             return channel;
         }
 

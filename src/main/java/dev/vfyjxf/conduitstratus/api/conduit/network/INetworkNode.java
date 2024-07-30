@@ -2,46 +2,88 @@ package dev.vfyjxf.conduitstratus.api.conduit.network;
 
 import dev.vfyjxf.conduitstratus.api.conduit.ConduitColor;
 import dev.vfyjxf.conduitstratus.api.conduit.IConduit;
+import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTraitType;
+import dev.vfyjxf.conduitstratus.api.conduit.trait.IConduitTrait;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import org.eclipse.collections.api.list.ImmutableList;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
-import org.eclipse.collections.api.set.ImmutableSet;
 
 import javax.annotation.Nullable;
 
 public interface INetworkNode {
 
+    NodeStatus getStatus();
+
     IConduit getConduit();
 
-    void setConduit(IConduit conduit);
+    BlockEntity getHolder();
+
+    default BlockPos getPos() {
+        return getHolder().getBlockPos();
+    }
+
+    @Nullable
+    default Level getLevel() {
+        return getHolder().getLevel();
+    }
 
     INetwork getNetwork();
 
     void setNetwork(INetwork network);
 
-    INetworkConnection createConnection(INetworkNode left, INetworkNode right);
+    default boolean acceptsTrait(IConduitTrait<?> trait) {
+        return getConduit().acceptsTrait(trait);
+    }
+
+    boolean hasTrait(ConduitTraitType<?> type);
 
     /**
-     * @return the directions of existing connections.
+     * @param type the trait type
+     * @param <T>  the trait type
+     * @return the list of the attached traits, if the type is not attached, an empty list will be returned.
      */
-    ImmutableSet<Direction> getDirections();
+    <T> MutableList<IConduitTrait<T>> getTraits(ConduitTraitType<T> type);
+
+    ImmutableMap<ConduitTraitType<?>, MutableList<IConduitTrait<?>>> allTraits();
+
+    /**
+     * @return the directions define existing connections.
+     */
+    RichIterable<Direction> getDirections();
 
     ImmutableMap<Direction, INetworkConnection> getConnectionsMap();
 
     @Nullable
     INetworkConnection getConnection(Direction direction);
 
-    ImmutableList<INetworkConnection> getConnections();
+    RichIterable<INetworkConnection> getConnections();
+
+    @Nullable
+    INetworkNode getNodeWithDirection(Direction direction);
 
     void rejectDirection(Direction direction);
 
     void removeRejection(Direction direction);
 
-    boolean connectable(Direction direction);
+    boolean connectable(Direction direction, INetworkNode node);
 
     boolean connected(Direction direction);
 
     void disconnect(Direction direction);
+
+    void disconnect(INetworkConnection connection);
+
+    default void disconnectAll() {
+        for (Direction value : Direction.values()) {
+            disconnect(value);
+        }
+    }
+
+    boolean canWorkWith(Direction direction);
 
     default ConduitColor getColor() {
         return getConduit().getColor();

@@ -23,7 +23,6 @@ public abstract class ConduitStratus {
         ITEMS.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
         NeoForge.EVENT_BUS.register(this);
-
         Config.register(modContainer);
     }
 }
