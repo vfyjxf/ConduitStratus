@@ -6,7 +6,7 @@ import net.neoforged.neoforge.capabilities.BlockCapability;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.jetbrains.annotations.Nullable;
 
-public record ConduitTraitType<T extends IConduitTrait<T>>(
+public record ConduitTraitType<T extends ConduitTrait<T>>(
         MapCodec<T> codec,
         ImmutableSet<BlockCapability<?, @Nullable Direction>> receiverCapabilities,
         ImmutableSet<BlockCapability<?, @Nullable Direction>> handlerCapabilities

@@ -1,32 +1,33 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
 import dev.vfyjxf.conduitstratus.api.conduit.ConduitIO;
-import dev.vfyjxf.conduitstratus.api.conduit.IConduit;
-import dev.vfyjxf.conduitstratus.api.conduit.network.INetwork;
-import dev.vfyjxf.conduitstratus.api.conduit.network.INetworkNode;
+import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
+import dev.vfyjxf.conduitstratus.api.conduit.event.TraitEvent;
+import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
+import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
+import dev.vfyjxf.conduitstratus.api.event.IEventHandler;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.fluids.FluidStack;
-import org.checkerframework.checker.units.qual.N;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * The capability create a {@link IConduit} to handle data. such as {@link ItemStack}s, {@link FluidStack}s, etc.
+ * The capability create a {@link Conduit} to handle data. such as {@link ItemStack}s, {@link FluidStack}s, etc.
  */
-public interface IConduitTrait<T extends IConduitTrait<T>> {
+public interface ConduitTrait<T extends ConduitTrait<T>> extends IEventHandler<TraitEvent> {
 
     ConduitTraitType<T> getType();
 
-    INetworkNode getHolder();
+    NetworkNode getHolder();
 
-    default INetwork getNetwork() {
+    default Network getNetwork() {
         return getHolder().getNetwork();
     }
 
-    default IConduit getConduit() {
+    default Conduit getConduit() {
         return getHolder().getConduit();
     }
 
@@ -42,11 +43,11 @@ public interface IConduitTrait<T extends IConduitTrait<T>> {
      * @return this
      */
     @Contract("_ -> this")
-    IConduitTrait<T> setIO(ConduitIO conduitIO);
+    ConduitTrait<T> setIO(ConduitIO conduitIO);
 
     @Nullable
     default BlockEntity getFacing() {
-        INetworkNode holder = getHolder();
+        NetworkNode holder = getHolder();
         Level level = holder.getLevel();
         if (level == null) return null;
         else return level.getBlockEntity(holder.getPos().relative(getDirection()));

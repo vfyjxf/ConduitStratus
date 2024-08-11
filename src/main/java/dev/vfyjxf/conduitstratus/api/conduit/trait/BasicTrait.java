@@ -1,24 +1,24 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
 import dev.vfyjxf.conduitstratus.api.conduit.ConduitIO;
-import dev.vfyjxf.conduitstratus.api.conduit.network.INetworkNode;
+import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import net.minecraft.core.Direction;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class BasicTrait<T extends IConduitTrait<T>> implements IConduitTrait<T> {
+public abstract class BasicTrait<T extends ConduitTrait<T>> implements ConduitTrait<T> {
 
-    protected final INetworkNode holder;
+    protected final NetworkNode holder;
     protected final Direction direction;
     @NotNull
     protected ConduitIO io = ConduitIO.NONE;
 
-    protected BasicTrait(INetworkNode holder, Direction direction) {
+    protected BasicTrait(NetworkNode holder, Direction direction) {
         this.holder = holder;
         this.direction = direction;
     }
 
     @Override
-    public INetworkNode getHolder() {
+    public NetworkNode getHolder() {
         return holder;
     }
 
@@ -33,7 +33,7 @@ public abstract class BasicTrait<T extends IConduitTrait<T>> implements IConduit
     }
 
     @Override
-    public IConduitTrait<T> setIO(ConduitIO conduitIO) {
+    public ConduitTrait<T> setIO(ConduitIO conduitIO) {
         this.io = conduitIO;
         return this;
     }

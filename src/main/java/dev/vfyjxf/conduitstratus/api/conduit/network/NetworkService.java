@@ -1,4 +1,4 @@
 package dev.vfyjxf.conduitstratus.api.conduit.network;
 
-public interface INetworkService {
+public interface NetworkService {
 }

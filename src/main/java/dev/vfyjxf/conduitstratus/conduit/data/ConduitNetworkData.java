@@ -1,20 +1,19 @@
 package dev.vfyjxf.conduitstratus.conduit.data;
 
-import dev.vfyjxf.conduitstratus.api.conduit.data.INetworkData;
 import dev.vfyjxf.conduitstratus.api.conduit.data.NetworkDataType;
-import dev.vfyjxf.conduitstratus.api.conduit.event.IConduitNetworkEvent;
-import dev.vfyjxf.conduitstratus.api.conduit.network.INetwork;
-import dev.vfyjxf.conduitstratus.api.conduit.network.INetworkNode;
+import dev.vfyjxf.conduitstratus.api.conduit.event.ConduitNetworkEvent;
+import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
+import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 
 import java.util.Objects;
 
-public class NetworkData<T> implements INetworkData<T> {
+public class ConduitNetworkData<T> implements dev.vfyjxf.conduitstratus.api.conduit.data.NetworkData<T> {
 
-    private final INetworkNode node;
+    private final NetworkNode node;
     private final NetworkDataType<T> type;
     private T value;
 
-    public NetworkData(INetworkNode node, NetworkDataType<T> type, T value) {
+    public ConduitNetworkData(NetworkNode node, NetworkDataType<T> type, T value) {
         this.node = node;
         this.type = type;
         this.value = value;
@@ -37,9 +36,9 @@ public class NetworkData<T> implements INetworkData<T> {
 
     @Override
     public void set(T value) {
-        INetwork network = this.node.getNetwork();
+        Network network = this.node.getNetwork();
         var context = network.common();
-        network.listeners(IConduitNetworkEvent.onDataUpdate).onNetworkDataUpdate(node, this, context);
+        network.listeners(ConduitNetworkEvent.onDataUpdate).onNetworkDataUpdate(node, this, context);
         if (context.cancelled()) return;
 
         this.value = value;
@@ -50,7 +49,7 @@ public class NetworkData<T> implements INetworkData<T> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        NetworkData<?> that = (NetworkData<?>) o;
+        ConduitNetworkData<?> that = (ConduitNetworkData<?>) o;
         return node.equals(that.node) && type.equals(that.type) && Objects.equals(value, that.value);
     }
 
@@ -64,7 +63,7 @@ public class NetworkData<T> implements INetworkData<T> {
 
     @Override
     public String toString() {
-        return "NetworkData{" +
+        return "ConduitNetworkData{" +
                 "node=" + node +
                 ", type=" + type +
                 ", value=" + value +

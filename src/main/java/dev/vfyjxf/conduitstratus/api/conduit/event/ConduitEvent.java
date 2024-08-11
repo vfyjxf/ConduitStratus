@@ -4,7 +4,7 @@ import dev.vfyjxf.conduitstratus.api.event.EventFactory;
 import dev.vfyjxf.conduitstratus.api.event.IEventContext;
 import dev.vfyjxf.conduitstratus.api.event.IEventDefinition;
 
-public interface IConduitEvent {
+public interface ConduitEvent {
 
     IEventDefinition<OnNetworkTick> onNetworkTick = EventFactory.define(OnNetworkTick.class, listeners -> context -> {
         for (var listener : listeners) {
@@ -34,21 +34,21 @@ public interface IConduitEvent {
         }
     });
 
-    interface OnNetworkTick extends IConduitEvent {
+    interface OnNetworkTick extends ConduitEvent {
         void onNetworkTick(IEventContext.Cancelable context);
 
     }
 
-    interface OnTraitHandle extends IConduitEvent {
+    interface OnTraitHandle extends ConduitEvent {
         void onTraitHandle(IEventContext.Interruptible context);
     }
 
-    interface OnTraitHandlePre extends IConduitEvent {
+    interface OnTraitHandlePre extends ConduitEvent {
         void onTraitHandlePre(IEventContext.Cancelable context);
 
     }
 
-    interface OnTraitHandlePost extends IConduitEvent {
+    interface OnTraitHandlePost extends ConduitEvent {
         void onTraitHandlePost(IEventContext.Interruptible context);
     }
 

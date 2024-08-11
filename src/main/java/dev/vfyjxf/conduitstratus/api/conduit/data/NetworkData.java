@@ -1,6 +1,6 @@
 package dev.vfyjxf.conduitstratus.api.conduit.data;
 
-public interface INetworkData<T> {
+public interface NetworkData<T> {
 
     /**
      *
@@ -21,8 +21,8 @@ public interface INetworkData<T> {
     void set(T value);
 
     @SuppressWarnings("unchecked")
-    default <C> INetworkData<C> checked() {
-        return (INetworkData<C>) this;
+    default <C> NetworkData<C> checked() {
+        return (NetworkData<C>) this;
     }
 
 }

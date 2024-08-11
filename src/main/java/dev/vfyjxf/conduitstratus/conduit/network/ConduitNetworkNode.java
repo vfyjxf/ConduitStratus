@@ -1,12 +1,11 @@
 package dev.vfyjxf.conduitstratus.conduit.network;
 
-import dev.vfyjxf.conduitstratus.api.conduit.IConduit;
-import dev.vfyjxf.conduitstratus.api.conduit.network.INetwork;
-import dev.vfyjxf.conduitstratus.api.conduit.network.INetworkConnection;
-import dev.vfyjxf.conduitstratus.api.conduit.network.INetworkNode;
+import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
+import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
+import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkConnection;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NodeStatus;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTraitType;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.IConduitTrait;
+import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTrait;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -22,17 +21,17 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 
-public class NetworkNode implements INetworkNode {
+public class ConduitNetworkNode implements dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode {
 
-    private INetwork network;
-    private final IConduit conduit;
+    private Network network;
+    private final Conduit conduit;
     private final BlockEntity holder;
-    private final MutableMap<Direction, INetworkConnection> connections = MapAdapter.adapt(new EnumMap<>(Direction.class));
+    private final MutableMap<Direction, NetworkConnection> connections = MapAdapter.adapt(new EnumMap<>(Direction.class));
     private final MutableSet<Direction> rejectDirections = Sets.mutable.empty();
-    private final MutableMap<ConduitTraitType<?>, MutableMap<Direction, IConduitTrait<?>>> traits = Maps.mutable.empty();
+    private final MutableMap<ConduitTraitType<?>, MutableMap<Direction, ConduitTrait<?>>> traits = Maps.mutable.empty();
     private NodeStatus status;
 
-    public NetworkNode(INetwork network, IConduit conduit, BlockEntity holder) {
+    public ConduitNetworkNode(Network network, Conduit conduit, BlockEntity holder) {
         this.network = network;
         this.conduit = conduit;
         this.holder = holder;
@@ -44,7 +43,7 @@ public class NetworkNode implements INetworkNode {
     }
 
     @Override
-    public IConduit getConduit() {
+    public Conduit getConduit() {
         return conduit;
     }
 
@@ -54,12 +53,12 @@ public class NetworkNode implements INetworkNode {
     }
 
     @Override
-    public INetwork getNetwork() {
+    public Network getNetwork() {
         return network;
     }
 
     @ApiStatus.Internal
-    public void setNetwork(INetwork network) {
+    public void setNetwork(Network network) {
         this.network = network;
     }
 
@@ -70,12 +69,12 @@ public class NetworkNode implements INetworkNode {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
-    public <T extends IConduitTrait<T>> ImmutableMap<Direction, IConduitTrait<T>> getTraits(ConduitTraitType<T> type) {
+    public <T extends ConduitTrait<T>> ImmutableMap<Direction, ConduitTrait<T>> getTraits(ConduitTraitType<T> type) {
         return ((ImmutableMap) traits.getIfAbsentPut(type, Maps.mutable::empty).toImmutable());
     }
 
     @Override
-    public ImmutableMap<ConduitTraitType<?>, MutableMap<Direction, IConduitTrait<?>>> allTraits() {
+    public ImmutableMap<ConduitTraitType<?>, MutableMap<Direction, ConduitTrait<?>>> allTraits() {
         return traits.toImmutable();
     }
 
@@ -85,24 +84,24 @@ public class NetworkNode implements INetworkNode {
     }
 
     @Override
-    public ImmutableMap<Direction, INetworkConnection> getConnectionsMap() {
+    public ImmutableMap<Direction, NetworkConnection> getConnectionsMap() {
         return connections.toImmutable();
     }
 
     @Nullable
     @Override
-    public INetworkConnection getConnection(Direction direction) {
+    public NetworkConnection getConnection(Direction direction) {
         return connections.get(direction);
     }
 
     @Override
-    public RichIterable<INetworkConnection> getConnections() {
+    public RichIterable<NetworkConnection> getConnections() {
         return connections.valuesView();
     }
 
     @Nullable
     @Override
-    public INetworkNode getNodeWithDirection(Direction direction) {
+    public dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode getNodeWithDirection(Direction direction) {
         return null;
     }
 
@@ -117,7 +116,7 @@ public class NetworkNode implements INetworkNode {
     }
 
     @Override
-    public boolean connectable(Direction direction, INetworkNode node) {
+    public boolean connectable(Direction direction, dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode node) {
         BlockPos relative = getPos().relative(direction);
 
         return !rejectDirections.contains(direction) &&
@@ -132,7 +131,7 @@ public class NetworkNode implements INetworkNode {
 
     @Override
     public void disconnect(Direction direction) {
-        INetworkConnection remove = this.connections.remove(direction);
+        NetworkConnection remove = this.connections.remove(direction);
         if (remove == null) {
             throw new IllegalStateException("Trying to disconnect an unknown connection");
         }
@@ -140,7 +139,7 @@ public class NetworkNode implements INetworkNode {
     }
 
     @Override
-    public void disconnect(INetworkConnection connection) {
+    public void disconnect(NetworkConnection connection) {
         Direction direction = connection.getDirection(this);
         this.connections.remove(direction);
         connection.destroy();
@@ -148,7 +147,7 @@ public class NetworkNode implements INetworkNode {
 
     @Override
     public void disconnectAll() {
-        for (INetworkConnection connection : connections.values()) {
+        for (NetworkConnection connection : connections.values()) {
             connection.destroy();
         }
     }

@@ -1,42 +1,41 @@
 package dev.vfyjxf.conduitstratus.conduit.network;
 
-import dev.vfyjxf.conduitstratus.api.conduit.network.INetwork;
-import dev.vfyjxf.conduitstratus.api.conduit.network.INetworkConnection;
-import dev.vfyjxf.conduitstratus.api.conduit.network.INetworkNode;
+import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
+import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import net.minecraft.core.Direction;
 import org.eclipse.collections.api.factory.Lists;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
 
-public class NetworkConnection implements INetworkConnection, Iterable<INetworkNode> {
+public class ConduitNetworkConnection implements dev.vfyjxf.conduitstratus.api.conduit.network.NetworkConnection, Iterable<NetworkNode> {
 
-    private final INetworkNode left;
-    private final INetworkNode right;
-    private final INetwork network;
+    private final NetworkNode left;
+    private final NetworkNode right;
+    private final Network network;
 
-    public static NetworkConnection create(INetworkNode left, INetworkNode right) {
-        return new NetworkConnection(left, right);
+    public static ConduitNetworkConnection create(NetworkNode left, NetworkNode right) {
+        return new ConduitNetworkConnection(left, right);
     }
 
-    private NetworkConnection(INetworkNode left, INetworkNode right) {
+    private ConduitNetworkConnection(NetworkNode left, NetworkNode right) {
         this.left = left;
         this.right = right;
         this.network = left.getNetwork();
     }
 
     @Override
-    public INetwork getNetwork() {
+    public Network getNetwork() {
         return network;
     }
 
     @Override
-    public INetworkNode getOtherSide(INetworkNode networkNode) {
+    public NetworkNode getOtherSide(NetworkNode networkNode) {
         return networkNode == left ? right : left;
     }
 
     @Override
-    public Direction getDirection(INetworkNode sourceNode) {
+    public Direction getDirection(NetworkNode sourceNode) {
         if (sourceNode != left && sourceNode != right) {
             throw new IllegalArgumentException("Source node must be either left or right");
         }
@@ -49,18 +48,18 @@ public class NetworkConnection implements INetworkConnection, Iterable<INetworkN
     }
 
     @Override
-    public INetworkNode left() {
+    public NetworkNode left() {
         return left;
     }
 
     @Override
-    public INetworkNode right() {
+    public NetworkNode right() {
         return right;
     }
 
     @NotNull
     @Override
-    public Iterator<INetworkNode> iterator() {
+    public Iterator<NetworkNode> iterator() {
         return Lists.mutable.of(left, right).iterator();
     }
 }

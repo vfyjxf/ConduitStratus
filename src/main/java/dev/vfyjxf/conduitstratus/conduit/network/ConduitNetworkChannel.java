@@ -2,8 +2,9 @@ package dev.vfyjxf.conduitstratus.conduit.network;
 
 import dev.vfyjxf.conduitstratus.api.conduit.ConduitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.network.ChannelColor;
-import dev.vfyjxf.conduitstratus.api.conduit.network.IConduitChannel;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.IConduitTrait;
+import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkChannel;
+import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTrait;
+import dev.vfyjxf.conduitstratus.conduit.traits.ItemTrait;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
@@ -11,11 +12,12 @@ import org.eclipse.collections.api.map.FixedSizeMap;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.ImmutableSet;
+import org.eclipse.collections.api.set.MutableSet;
 
-public class ConduitChannel<T> implements IConduitChannel<T> {
+public class ConduitNetworkChannel<T extends ConduitTrait<T>> implements NetworkChannel<T> {
 
     private final ChannelColor color;
-    private final FixedSizeMap<ConduitIO, MutableList<IConduitTrait<T>>> allTraits = Maps.fixedSize.with(
+    private final FixedSizeMap<ConduitIO, MutableList<ConduitTrait<T>>> allTraits = Maps.fixedSize.with(
             ConduitIO.INPUT, Lists.mutable.empty(),
             ConduitIO.OUTPUT, Lists.mutable.empty(),
             ConduitIO.BOTH, Lists.mutable.empty()
@@ -23,9 +25,9 @@ public class ConduitChannel<T> implements IConduitChannel<T> {
     /**
      * Note: 通常为少量多次的更新
      */
-    private final MutableMap<IConduitTrait<T>, MutableList<IConduitTrait<T>>> mapped = Maps.mutable.empty();
+    private final MutableMap<ConduitTrait<T>, MutableList<? extends ConduitTrait<T>>> mapped = Maps.mutable.empty();
 
-    public ConduitChannel(ChannelColor color) {
+    public ConduitNetworkChannel(ChannelColor color) {
         this.color = color;
     }
 
@@ -35,34 +37,34 @@ public class ConduitChannel<T> implements IConduitChannel<T> {
     }
 
     @Override
-    public ImmutableSet<IConduitTrait<T>> allTraits() {
-        return allTraits.flatCollect(i -> i).toImmutableSet();
+    public MutableSet<? extends ConduitTrait<T>> allTraits() {
+        return allTraits.flatCollect(MutableList::toSet).toSet();
     }
 
     @Override
-    public ImmutableMap<IConduitTrait<T>, MutableList<IConduitTrait<T>>> ioMaps() {
-        return mapped.toImmutable();
+    public MutableMap<ConduitTrait<T>, MutableList<? extends ConduitTrait<T>>> ioMaps() {
+        return mapped.clone();
     }
 
     @Override
-    public MutableList<IConduitTrait<T>> getByIO(ConduitIO conduitIO) {
+    public MutableList<? extends ConduitTrait<T>> getByIO(ConduitIO conduitIO) {
         return allTraits.get(conduitIO);
     }
 
     @Override
-    public boolean contains(IConduitTrait<T> trait) {
+    public boolean contains(ConduitTrait<T> trait) {
         return allTraits.valuesView().anySatisfy(t -> t.contains(trait));
     }
 
     @Override
-    public IConduitChannel<T> addTrait(IConduitTrait<T> trait) {
+    public NetworkChannel<T> addTrait(ConduitTrait<T> trait) {
         allTraits.get(trait.getIO()).add(trait);
         updateIOMaps();
         return this;
     }
 
     @Override
-    public IConduitChannel<T> removeTrait(IConduitTrait<T> trait) {
+    public NetworkChannel<T> removeTrait(ConduitTrait<T> trait) {
         allTraits.get(trait.getIO()).remove(trait);
         updateIOMaps();
         return this;
