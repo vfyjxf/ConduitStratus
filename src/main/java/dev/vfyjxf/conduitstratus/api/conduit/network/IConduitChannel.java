@@ -7,7 +7,7 @@ import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.jetbrains.annotations.Contract;
 
-public interface IConduitChannel<T> {
+public interface IConduitChannel<T extends IConduitTrait<T>> {
 
     ChannelColor getChannelColor();
 

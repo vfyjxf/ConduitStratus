@@ -11,26 +11,25 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.map.mutable.MapAdapter;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 
 public class NetworkNode implements INetworkNode {
 
-    private final INetwork network;
+    private INetwork network;
     private final IConduit conduit;
     private final BlockEntity holder;
     private final MutableMap<Direction, INetworkConnection> connections = MapAdapter.adapt(new EnumMap<>(Direction.class));
     private final MutableSet<Direction> rejectDirections = Sets.mutable.empty();
-    private final MutableMap<ConduitTraitType<?>, MutableList<IConduitTrait<?>>> traits = Maps.mutable.empty();
+    private final MutableMap<ConduitTraitType<?>, MutableMap<Direction, IConduitTrait<?>>> traits = Maps.mutable.empty();
     private NodeStatus status;
 
     public NetworkNode(INetwork network, IConduit conduit, BlockEntity holder) {
@@ -59,9 +58,9 @@ public class NetworkNode implements INetworkNode {
         return network;
     }
 
-    @Override
+    @ApiStatus.Internal
     public void setNetwork(INetwork network) {
-
+        this.network = network;
     }
 
     @Override
@@ -71,12 +70,12 @@ public class NetworkNode implements INetworkNode {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
-    public <T> MutableList<IConduitTrait<T>> getTraits(ConduitTraitType<T> type) {
-        return (MutableList) traits.getIfAbsentPut(type, Lists.mutable::empty);
+    public <T extends IConduitTrait<T>> ImmutableMap<Direction, IConduitTrait<T>> getTraits(ConduitTraitType<T> type) {
+        return ((ImmutableMap) traits.getIfAbsentPut(type, Maps.mutable::empty).toImmutable());
     }
 
     @Override
-    public ImmutableMap<ConduitTraitType<?>, MutableList<IConduitTrait<?>>> allTraits() {
+    public ImmutableMap<ConduitTraitType<?>, MutableMap<Direction, IConduitTrait<?>>> allTraits() {
         return traits.toImmutable();
     }
 
@@ -157,6 +156,7 @@ public class NetworkNode implements INetworkNode {
     @Override
     public boolean canWorkWith(Direction direction) {
         //TODO:
+        return false;
     }
 
     @Override

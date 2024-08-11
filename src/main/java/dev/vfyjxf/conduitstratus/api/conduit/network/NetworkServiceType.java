@@ -5,5 +5,5 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
 
-public record NetworkTraitType<T extends INetworkTrait>(Function<INetwork, T> factory, @Nullable Codec<T> codec) {
+public record NetworkServiceType<T extends INetworkService>(Function<INetwork, T> factory, @Nullable Codec<T> codec) {
 }

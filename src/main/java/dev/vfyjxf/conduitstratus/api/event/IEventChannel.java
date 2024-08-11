@@ -28,4 +28,10 @@ public interface IEventChannel<T> {
 
     void clearAllListeners();
 
+    void checkEvent(Checker<T> checker);
+
+    interface Checker<T> {
+        boolean check(Class<? extends T> type);
+    }
+
 }

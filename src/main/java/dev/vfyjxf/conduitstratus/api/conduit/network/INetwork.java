@@ -1,14 +1,16 @@
 package dev.vfyjxf.conduitstratus.api.conduit.network;
 
-import dev.vfyjxf.conduitstratus.api.conduit.IConduitDefinition;
+import dev.vfyjxf.conduitstratus.api.conduit.ConduitType;
 import dev.vfyjxf.conduitstratus.api.conduit.event.IConduitNetworkEvent;
 import dev.vfyjxf.conduitstratus.api.event.IEventHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-public interface INetwork extends Iterable<INetworkNode>, IEventHandler<IConduitNetworkEvent> {
+@ApiStatus.NonExtendable
+public interface INetwork extends IEventHandler<IConduitNetworkEvent> {
 
     /**
      * @return the center node define this network.
@@ -23,14 +25,19 @@ public interface INetwork extends Iterable<INetworkNode>, IEventHandler<IConduit
      */
     boolean isEmpty();
 
-    boolean support(IConduitDefinition definition);
+    boolean support(ConduitType definition);
 
-    boolean hasTrait(NetworkTraitType<?> type);
+    boolean hasService(NetworkServiceType<?> type);
 
-    @Nullable
-    <T extends INetworkTrait> T getTrait(NetworkTraitType<T> type);
+    /**
+     * @param type the network service type.
+     * @return the network service.
+     * @param <T> the network service type.
+     * @throws NullPointerException if the service not found.
+     */
+    <T extends INetworkService> T getService(NetworkServiceType<T> type);
 
-    <T extends INetworkTrait> T getOrCreateTrait(NetworkTraitType<T> type);
+    <T extends INetworkService> T getOrCreateService(NetworkServiceType<T> type);
 
     boolean updateNetwork();
 

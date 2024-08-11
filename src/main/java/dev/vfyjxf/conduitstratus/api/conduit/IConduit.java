@@ -4,7 +4,7 @@ import dev.vfyjxf.conduitstratus.api.conduit.trait.IConduitTrait;
 
 public interface IConduit {
 
-    IConduitDefinition definition();
+    ConduitType type();
 
     ConduitColor getColor();
 

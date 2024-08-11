@@ -4,7 +4,8 @@ public enum ConduitIO {
 
     INPUT,
     OUTPUT,
-    BOTH;
+    BOTH,
+    NONE;
 
     public boolean input() {
         return this == INPUT || this == BOTH;

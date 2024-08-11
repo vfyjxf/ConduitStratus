@@ -11,9 +11,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
+import org.eclipse.collections.api.map.MutableMap;
+import org.jetbrains.annotations.ApiStatus;
 
 import javax.annotation.Nullable;
 
+@ApiStatus.NonExtendable
 public interface INetworkNode {
 
     NodeStatus getStatus();
@@ -33,8 +36,6 @@ public interface INetworkNode {
 
     INetwork getNetwork();
 
-    void setNetwork(INetwork network);
-
     default boolean acceptsTrait(IConduitTrait<?> trait) {
         return getConduit().acceptsTrait(trait);
     }
@@ -44,11 +45,11 @@ public interface INetworkNode {
     /**
      * @param type the trait type
      * @param <T>  the trait type
-     * @return the list of the attached traits, if the type is not attached, an empty list will be returned.
+     * @return the list create the attached traits, if the type is not attached, an empty list will be returned.
      */
-    <T> MutableList<IConduitTrait<T>> getTraits(ConduitTraitType<T> type);
+    <T extends IConduitTrait<T>> ImmutableMap<Direction, IConduitTrait<T>> getTraits(ConduitTraitType<T> type);
 
-    ImmutableMap<ConduitTraitType<?>, MutableList<IConduitTrait<?>>> allTraits();
+    ImmutableMap<ConduitTraitType<?>, MutableMap<Direction, IConduitTrait<?>>> allTraits();
 
     /**
      * @return the directions define existing connections.

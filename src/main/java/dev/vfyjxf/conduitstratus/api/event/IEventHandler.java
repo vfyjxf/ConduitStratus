@@ -21,7 +21,6 @@ public interface IEventHandler<T> {
         return channel().get(definition).invoker();
     }
 
-
     default <E extends T> E register(IEventDefinition<E> definition, E listener) {
         return channel().get(definition).register(listener);
     }
