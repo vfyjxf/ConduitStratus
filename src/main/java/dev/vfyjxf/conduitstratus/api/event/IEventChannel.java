@@ -30,6 +30,7 @@ public interface IEventChannel<T> {
 
     void checkEvent(Checker<T> checker);
 
+    @FunctionalInterface
     interface Checker<T> {
         boolean check(Class<? extends T> type);
     }

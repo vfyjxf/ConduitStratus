@@ -68,8 +68,8 @@ public final class ConduitNetwork implements Network {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends NetworkService> T getService(NetworkServiceType<T> type) {
-        NetworkService service = services.get(type);
+    public <T extends NetworkService<T>> T getService(NetworkServiceType<T> type) {
+        NetworkService<T> service = services.get(type);
         if (service == null) {
             throw new NullPointerException("Service not found: " + type);
         }
@@ -78,7 +78,7 @@ public final class ConduitNetwork implements Network {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends NetworkService> T getOrCreateService(NetworkServiceType<T> type) {
+    public <T extends NetworkService<T>> T getOrCreateService(NetworkServiceType<T> type) {
         return (T) services.getIfAbsentPut(type, () -> type.factory().apply(this));
     }
 
@@ -92,7 +92,7 @@ public final class ConduitNetwork implements Network {
     }
 
     @Override
-    public IEventChannel<ConduitNetworkEvent> channel() {
+    public IEventChannel<ConduitNetworkEvent> events() {
         return eventChannel;
     }
 }

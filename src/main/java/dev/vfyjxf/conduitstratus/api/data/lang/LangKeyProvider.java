@@ -33,7 +33,7 @@ public class LangKeyProvider extends LanguageProvider {
                         } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException |
                                  IllegalAccessException |
                                  InstantiationException e) {
-                            LOGGER.error("Failed to load lang handler: {}", annotation.memberName(), e);
+                            LOGGER.error("Failed to load lang poster: {}", annotation.memberName(), e);
                         }
                     });
         }

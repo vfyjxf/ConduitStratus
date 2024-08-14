@@ -9,9 +9,9 @@ import java.util.function.Function;
  * <p>
  * Some basic promises:
  * <p>
- * 1. The naming define channel follows the lowercase hump naming
+ * 1. The naming define events follows the lowercase hump naming
  * <p>
- * 2. Pre-phase channel do not need to add the Pre suffix, but Post-phase channel need to add the Post suffix.
+ * 2. Pre-phase events do not need to add the Pre suffix, but Post-phase events need to add the Post suffix.
  * <p>
  * 3. Usually, an event is defined in an interface with its listeners.
  */

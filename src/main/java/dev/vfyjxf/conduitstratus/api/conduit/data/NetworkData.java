@@ -1,15 +1,19 @@
 package dev.vfyjxf.conduitstratus.api.conduit.data;
 
+/**
+ * the data hole by network nodes.
+ */
 public interface NetworkData<T> {
 
     /**
-     *
      * @return the type create this data.
      */
     NetworkDataType<T> type();
 
     /**
-     * @return the direct access create this data. it doesn't fire any event.
+     * @return the direct access create this data.
+     * <p>
+     * it doesn't fire any event.
      */
     T directAccess();
 

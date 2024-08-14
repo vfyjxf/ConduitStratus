@@ -36,9 +36,9 @@ public interface Network extends IEventHandler<ConduitNetworkEvent> {
      * @return the network service.
      * @throws NullPointerException if the service not found.
      */
-    <T extends NetworkService> T getService(NetworkServiceType<T> type);
+    <T extends NetworkService<T>> T getService(NetworkServiceType<T> type);
 
-    <T extends NetworkService> T getOrCreateService(NetworkServiceType<T> type);
+    <T extends NetworkService<T>> T getOrCreateService(NetworkServiceType<T> type);
 
     boolean updateNetwork();
 

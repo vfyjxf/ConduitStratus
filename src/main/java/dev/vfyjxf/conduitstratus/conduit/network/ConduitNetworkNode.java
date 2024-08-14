@@ -3,6 +3,7 @@ package dev.vfyjxf.conduitstratus.conduit.network;
 import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkConnection;
+import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NodeStatus;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTraitType;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTrait;
@@ -21,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 
-public class ConduitNetworkNode implements dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode {
+public class ConduitNetworkNode implements NetworkNode {
 
     private Network network;
     private final Conduit conduit;
@@ -101,7 +102,7 @@ public class ConduitNetworkNode implements dev.vfyjxf.conduitstratus.api.conduit
 
     @Nullable
     @Override
-    public dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode getNodeWithDirection(Direction direction) {
+    public NetworkNode getNodeWithDirection(Direction direction) {
         return null;
     }
 
@@ -116,7 +117,7 @@ public class ConduitNetworkNode implements dev.vfyjxf.conduitstratus.api.conduit
     }
 
     @Override
-    public boolean connectable(Direction direction, dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode node) {
+    public boolean connectable(Direction direction, NetworkNode node) {
         BlockPos relative = getPos().relative(direction);
 
         return !rejectDirections.contains(direction) &&

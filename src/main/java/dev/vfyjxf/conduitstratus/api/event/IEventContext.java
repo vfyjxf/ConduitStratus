@@ -1,6 +1,7 @@
 package dev.vfyjxf.conduitstratus.api.event;
 
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 public sealed interface IEventContext permits IEventContext.Common, IEventContext.Cancelable, IEventContext.Interruptible {
 
@@ -8,8 +9,17 @@ public sealed interface IEventContext permits IEventContext.Common, IEventContex
     IEventChannel<?> getChannel();
 
     @SuppressWarnings("unchecked")
-    default <T> T holder() {
+    default <T> T poster() {
         return (T) getChannel().handler();
+    }
+
+    @Nullable
+    default <T> T poster(Class<T> type) {
+        IEventHandler<?> handler = getChannel().handler();
+        if (type.isInstance(handler)) {
+            return type.cast(handler);
+        }
+        return null;
     }
 
     boolean cancelled();

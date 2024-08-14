@@ -3,7 +3,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '1.0.14'
+    id 'net.neoforged.moddev' version '1.0.17'
 }
 
 tasks.named('wrapper', Wrapper).configure {
@@ -103,6 +103,7 @@ neoForge {
     }
 }
 sourceSets.main.resources { srcDir 'src/generated/resources' }
+
 configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
@@ -115,7 +116,7 @@ dependencies {
     jarJar "org.eclipse.collections:eclipse-collections:[11.1.0,)"
 }
 
-tasks.withType(ProcessResources).configureEach {
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
     var replaceProperties = [
             minecraft_version      : minecraft_version,
             minecraft_version_range: minecraft_version_range,
@@ -130,12 +131,12 @@ tasks.withType(ProcessResources).configureEach {
             mod_description        : mod_description
     ]
     inputs.properties replaceProperties
-
-    filesMatching(['META-INF/neoforge.mods.toml']) {
-        expand replaceProperties
-    }
-    exclueStrategies.add(1, 'com.neoforged.gradle.tasks.ExcludeStrategy')
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
 }
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
 
 publishing {
     publications {

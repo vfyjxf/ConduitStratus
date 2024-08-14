@@ -18,7 +18,7 @@ public abstract class BasicTrait<T extends ConduitTrait<T>> implements ConduitTr
     }
 
     @Override
-    public NetworkNode getHolder() {
+    public NetworkNode getNode() {
         return holder;
     }
 
