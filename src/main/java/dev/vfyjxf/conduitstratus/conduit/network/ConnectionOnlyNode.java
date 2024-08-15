@@ -18,14 +18,16 @@ import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.map.mutable.MapAdapter;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.EnumMap;
 import java.util.Iterator;
 
-public class ConduitNetworkNode implements NetworkNode, ConduitNetworkHolder {
+public class ConnectionOnlyNode implements NetworkNode, ConduitNetworkHolder {
+
+    @SuppressWarnings("rawtypes")
+    private static final MutableMap EMPTY_MAP = Maps.mutable.empty();
 
     private Network network;
     private final ServerLevel level;
@@ -33,10 +35,9 @@ public class ConduitNetworkNode implements NetworkNode, ConduitNetworkHolder {
     private final BlockEntity holder;
     private final MutableMap<Direction, NetworkConnection> connections = MapAdapter.adapt(new EnumMap<>(Direction.class));
     private final MutableSet<Direction> rejectDirections = Sets.mutable.empty();
-    private final MutableMap<ConduitTraitType<?>, MutableMap<Direction, ? extends ConduitTrait<?>>> traits = Maps.mutable.empty();
     private NodeStatus status = NodeStatus.ACTIVE;
 
-    public ConduitNetworkNode(Network network, Conduit conduit, BlockEntity holder) {
+    public ConnectionOnlyNode(Network network, Conduit conduit, BlockEntity holder) {
         Checks.checkArgument(holder.getLevel() instanceof ServerLevel, "The given BlockEntity must be in a ServerLevel");
         this.network = network;
         this.conduit = conduit;
@@ -64,7 +65,7 @@ public class ConduitNetworkNode implements NetworkNode, ConduitNetworkHolder {
         return network;
     }
 
-    @ApiStatus.Internal
+    @Override
     public void setNetwork(Network network) {
         this.network = network;
     }
@@ -76,18 +77,19 @@ public class ConduitNetworkNode implements NetworkNode, ConduitNetworkHolder {
 
     @Override
     public boolean hasTrait(ConduitTraitType<?> type) {
-        return traits.containsKey(type);
+        return false;
     }
 
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings("unchecked")
     @Override
-    public <T extends ConduitTrait<T>> MutableMap<Direction, ? extends ConduitTrait<T>> getTraits(ConduitTraitType<T> type) {
-        return (MutableMap<Direction, ? extends ConduitTrait<T>>) traits.getIfAbsentPut(type, Maps.mutable::empty);
+    public <T extends ConduitTrait<T>> MutableMap<Direction, ConduitTrait<T>> getTraits(ConduitTraitType<T> type) {
+        return EMPTY_MAP;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public MutableMap<ConduitTraitType<?>, MutableMap<Direction, ? extends ConduitTrait<?>>> allTraits() {
-        return traits.clone();
+        return EMPTY_MAP;
     }
 
     @Override
@@ -100,9 +102,8 @@ public class ConduitNetworkNode implements NetworkNode, ConduitNetworkHolder {
         return connections.clone();
     }
 
-    @Nullable
     @Override
-    public NetworkConnection getConnection(Direction direction) {
+    public @Nullable NetworkConnection getConnection(Direction direction) {
         return connections.get(direction);
     }
 
@@ -126,11 +127,6 @@ public class ConduitNetworkNode implements NetworkNode, ConduitNetworkHolder {
     }
 
     @Override
-    public boolean containsRejection(Direction direction) {
-        return this.rejectDirections.contains(direction);
-    }
-
-    @Override
     public void removeRejection(Direction direction) {
         this.rejectDirections.remove(direction);
     }
@@ -139,10 +135,7 @@ public class ConduitNetworkNode implements NetworkNode, ConduitNetworkHolder {
     public boolean connectable(Direction direction, NetworkNode node) {
         BlockPos relative = getPos().relative(direction);
 
-        return this.network == node.getNetwork() &&
-                getConduit().connectable(node.getConduit()) &&
-                !rejectDirections.contains(direction) &&
-                !node.containsRejection(direction.getOpposite()) &&
+        return !rejectDirections.contains(direction) &&
                 relative.equals(node.getPos()) &&
                 conduit.connectable(node.getConduit());
     }
@@ -186,12 +179,5 @@ public class ConduitNetworkNode implements NetworkNode, ConduitNetworkHolder {
     @Override
     public void tick() {
 
-    }
-
-    @Override
-    public String toString() {
-        return "ConduitNetworkNode{" +
-                " pos=" + getPos() +
-                '}';
     }
 }

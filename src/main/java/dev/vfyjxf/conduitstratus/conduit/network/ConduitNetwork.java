@@ -14,11 +14,15 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ConduitNetwork implements Network {
 
+    public static final Logger logger = LoggerFactory.getLogger("ConduitStratus-ConduitNetwork");
+
     private final EventChannel<ConduitNetworkEvent> eventChannel = new EventChannel<>(this);
-    private final MutableMap<NetworkServiceType<?>, NetworkService> services = Maps.mutable.empty();
+    private final MutableMap<NetworkServiceType<?>, NetworkService<?>> services = Maps.mutable.empty();
     private final MutableList<ConduitNetworkNode> nodes = Lists.mutable.empty();
     private final NetworkTickManager tickManager = new NetworkTickManager();
     private @Nullable ConduitNetworkNode center;
@@ -69,7 +73,7 @@ public final class ConduitNetwork implements Network {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends NetworkService<T>> T getService(NetworkServiceType<T> type) {
-        NetworkService<T> service = services.get(type);
+        NetworkService<T> service = (NetworkService<T>) services.get(type);
         if (service == null) {
             throw new NullPointerException("Service not found: " + type);
         }

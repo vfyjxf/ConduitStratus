@@ -37,7 +37,7 @@ public class ConduitNetworkConnection implements dev.vfyjxf.conduitstratus.api.c
     @Override
     public Direction getDirection(NetworkNode sourceNode) {
         if (sourceNode != left && sourceNode != right) {
-            throw new IllegalArgumentException("Source node must be either left or right");
+            throw new IllegalArgumentException("Source node must be either first or second");
         }
         return sourceNode.getConnectionsMap().detect((k, v) -> v == this).getOne();
     }
@@ -48,12 +48,12 @@ public class ConduitNetworkConnection implements dev.vfyjxf.conduitstratus.api.c
     }
 
     @Override
-    public NetworkNode left() {
+    public NetworkNode first() {
         return left;
     }
 
     @Override
-    public NetworkNode right() {
+    public NetworkNode second() {
         return right;
     }
 

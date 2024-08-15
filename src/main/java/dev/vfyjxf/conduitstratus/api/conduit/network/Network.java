@@ -5,7 +5,6 @@ import dev.vfyjxf.conduitstratus.api.conduit.event.ConduitNetworkEvent;
 import dev.vfyjxf.conduitstratus.api.event.IEventHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -43,9 +42,5 @@ public interface Network extends IEventHandler<ConduitNetworkEvent> {
     boolean updateNetwork();
 
     void tick();
-
-    default boolean loaded(Level level, BlockPos pos) {
-        return level.isLoaded(pos);
-    }
 
 }

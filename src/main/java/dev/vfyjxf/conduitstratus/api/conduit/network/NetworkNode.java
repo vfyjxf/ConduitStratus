@@ -1,17 +1,18 @@
 package dev.vfyjxf.conduitstratus.api.conduit.network;
 
-import dev.vfyjxf.conduitstratus.api.conduit.ConduitColor;
 import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTraitType;
+import dev.vfyjxf.conduitstratus.api.conduit.ConduitColor;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTrait;
+import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTraitType;
+import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitConnection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Unmodifiable;
 
 import javax.annotation.Nullable;
 
@@ -31,9 +32,8 @@ public interface NetworkNode {
         return getHolder().getBlockPos();
     }
 
-    @Nullable
-    default Level getLevel() {
-        return getHolder().getLevel();
+    default ServerLevel getLevel() {
+        return (ServerLevel) getHolder().getLevel();
     }
 
     Network getNetwork();
@@ -49,26 +49,31 @@ public interface NetworkNode {
      * @param <T>  the trait type
      * @return the list create the attached traits, if the type is not attached, an empty list will be returned.
      */
-    <T extends ConduitTrait<T>> ImmutableMap<Direction, ConduitTrait<T>> getTraits(ConduitTraitType<T> type);
+    <T extends ConduitTrait<T>> MutableMap<Direction, ? extends ConduitTrait<T>> getTraits(ConduitTraitType<T> type);
 
-    ImmutableMap<ConduitTraitType<?>, MutableMap<Direction, ConduitTrait<?>>> allTraits();
+    MutableMap<ConduitTraitType<?>, MutableMap<Direction, ? extends ConduitTrait<?>>> allTraits();
 
     /**
      * @return the directions define existing connections.
      */
+    @Unmodifiable
     RichIterable<Direction> getDirections();
 
-    ImmutableMap<Direction, NetworkConnection> getConnectionsMap();
+    MutableMap<Direction, NetworkConnection> getConnectionsMap();
 
     @Nullable
     NetworkConnection getConnection(Direction direction);
 
+    @Unmodifiable
     RichIterable<NetworkConnection> getConnections();
 
     @Nullable
     NetworkNode getNodeWithDirection(Direction direction);
 
     void rejectDirection(Direction direction);
+
+    @ApiStatus.Internal
+    boolean containsRejection(Direction direction);
 
     void removeRejection(Direction direction);
 
@@ -86,6 +91,11 @@ public interface NetworkNode {
         }
     }
 
+    /**
+     *
+     * @param direction the direction to check
+     * @return Whether the node can connect to the given direction with a {@link TraitConnection}
+     */
     boolean canWorkWith(Direction direction);
 
     default ConduitColor getColor() {

@@ -5,7 +5,6 @@ import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTrait;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
@@ -13,13 +12,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.IdentityHashMap;
 
-public class CacheCapabilityTraitConnection<CAP> implements CapabilityConnection<CAP> {
+public class CachedCapabilityTraitConnection<CAP> implements CapabilityConnection<CAP> {
 
     private final ServerLevel level;
     private final BlockCapabilityCache<? extends CAP, @Nullable Direction> cache;
     private IdentityHashMap<BlockCapability<?, @Nullable Direction>, BlockCapabilityCache<?, @Nullable Direction>> extraCaches = null;
 
-    public CacheCapabilityTraitConnection(ConduitTrait<?> trait, BlockCapability<? extends CAP, @Nullable Direction> token) {
+    public CachedCapabilityTraitConnection(ConduitTrait<?> trait, BlockCapability<? extends CAP, @Nullable Direction> token) {
         if (trait.getLevel() instanceof ServerLevel) {
             this.level = (ServerLevel) trait.getLevel();
         } else {

@@ -12,8 +12,8 @@ public interface NetworkConnection {
 
     void destroy();
 
-    NetworkNode left();
+    NetworkNode first();
 
-    NetworkNode right();
+    NetworkNode second();
 
 }

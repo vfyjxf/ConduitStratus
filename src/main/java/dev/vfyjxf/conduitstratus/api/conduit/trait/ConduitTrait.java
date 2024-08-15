@@ -1,7 +1,7 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
-import dev.vfyjxf.conduitstratus.api.conduit.ConduitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
+import dev.vfyjxf.conduitstratus.api.conduit.ConduitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.event.TraitEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
@@ -56,8 +56,10 @@ public interface ConduitTrait<T extends ConduitTrait<T>> extends IEventHandler<T
     default BlockEntity getFacing() {
         NetworkNode holder = getNode();
         Level level = holder.getLevel();
-        if (level == null) return null;
-        else return level.getBlockEntity(holder.getPos().relative(getDirection()));
+        BlockPos target = holder.getPos().relative(getDirection());
+        if (level.isLoaded(target)) {
+            return level.getBlockEntity(target);
+        } else return null;
     }
 
     @Nullable

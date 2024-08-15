@@ -10,6 +10,8 @@ public interface Conduit {
 
     boolean acceptsTrait(ConduitTrait<?> trait);
 
-    boolean connectable(Conduit another);
+    default boolean connectable(Conduit another) {
+        return type() == another.type() && getColor() == another.getColor();
+    }
 
 }

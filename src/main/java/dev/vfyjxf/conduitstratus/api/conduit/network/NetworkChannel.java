@@ -3,9 +3,7 @@ package dev.vfyjxf.conduitstratus.api.conduit.network;
 import dev.vfyjxf.conduitstratus.api.conduit.ConduitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTrait;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.set.MutableSet;
 import org.jetbrains.annotations.Contract;
 

@@ -5,7 +5,7 @@ import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.event.EventFactory;
 import dev.vfyjxf.conduitstratus.api.event.IEventDefinition;
 
-import static dev.vfyjxf.conduitstratus.api.event.IEventContext.*;
+import static dev.vfyjxf.conduitstratus.api.event.IEventContext.Common;
 
 public interface ConduitNetworkEvent extends ConduitEvent {
 
@@ -16,10 +16,28 @@ public interface ConduitNetworkEvent extends ConduitEvent {
         }
     }));
 
+    IEventDefinition<OnNodeAdded> onNodeAdded = EventFactory.define(OnNodeAdded.class, listeners -> (node -> {
+        for (OnNodeAdded listener : listeners) {
+            listener.onNodeAdded(node);
+        }
+    }));
+
+    IEventDefinition<OnNodeRemoved> onNodeRemoved = EventFactory.define(OnNodeRemoved.class, listeners -> (node -> {
+        for (OnNodeRemoved listener : listeners) {
+            listener.onNodeRemoved(node);
+        }
+    }));
+
     interface OnDataUpdate extends ConduitNetworkEvent {
-
         void onNetworkDataUpdate(NetworkNode node, NetworkData<?> data, Common context);
+    }
 
+    interface OnNodeAdded extends ConduitNetworkEvent {
+            void onNodeAdded(NetworkNode node);
+    }
+
+    interface OnNodeRemoved extends ConduitNetworkEvent {
+            void onNodeRemoved(NetworkNode node);
     }
 
 }

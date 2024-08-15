@@ -4,14 +4,11 @@ import dev.vfyjxf.conduitstratus.api.conduit.ConduitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.network.ChannelColor;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkChannel;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTrait;
-import dev.vfyjxf.conduitstratus.conduit.traits.ItemTrait;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.FixedSizeMap;
-import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.set.MutableSet;
 
 public class ConduitNetworkChannel<T extends ConduitTrait<T>> implements NetworkChannel<T> {
