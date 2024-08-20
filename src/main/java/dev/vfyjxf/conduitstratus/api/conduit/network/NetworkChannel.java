@@ -7,25 +7,30 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
 import org.jetbrains.annotations.Contract;
 
-public interface NetworkChannel<T extends ConduitTrait<T>> {
+//TODO:去泛化，这里没必要用泛型，我们支持不同类型的trait相互交换数据
+public interface NetworkChannel {
 
     ChannelColor getChannelColor();
 
-    MutableSet<? extends ConduitTrait<T>> allTraits();
+    MutableSet<? extends ConduitTrait<?>> allTraits();
 
     /**
      * @return the output to input maps
      */
-    MutableMap<ConduitTrait<T>, MutableList<? extends ConduitTrait<T>>> ioMaps();
+    MutableMap<ConduitTrait<?>, MutableList<? extends ConduitTrait<?>>> ioMaps();
 
-    MutableList<? extends ConduitTrait<T>> getByIO(ConduitIO conduitIO);
+    MutableList<? extends ConduitTrait<?>> getByIO(ConduitIO conduitIO);
 
-    boolean contains(ConduitTrait<T> trait);
+    MutableList<? extends ConduitTrait<?>> getInputs();
+
+    MutableList<? extends ConduitTrait<?>> getOutputs();
+
+    boolean contains(ConduitTrait<?> trait);
 
     @Contract("_ -> this")
-    NetworkChannel<T> addTrait(ConduitTrait<T> trait);
+    NetworkChannel addTrait(ConduitTrait<?> trait);
 
     @Contract("_ -> this")
-    NetworkChannel<T> removeTrait(ConduitTrait<T> trait);
+    NetworkChannel removeTrait(ConduitTrait<?> trait);
 
 }

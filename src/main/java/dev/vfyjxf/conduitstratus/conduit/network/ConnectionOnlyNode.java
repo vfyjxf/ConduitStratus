@@ -93,7 +93,7 @@ public class ConnectionOnlyNode implements NetworkNode, ConduitNetworkHolder {
     }
 
     @Override
-    public RichIterable<Direction> getDirections() {
+    public @Unmodifiable RichIterable<Direction> getDirections() {
         return connections.keysView();
     }
 
@@ -114,7 +114,7 @@ public class ConnectionOnlyNode implements NetworkNode, ConduitNetworkHolder {
 
     @Nullable
     @Override
-    public NetworkNode getNodeWithDirection(Direction direction) {
+    public NetworkNode getNodeByDirection(Direction direction) {
         NetworkConnection connection = connections.get(direction);
         if (connection == null) return null;
 
@@ -124,6 +124,11 @@ public class ConnectionOnlyNode implements NetworkNode, ConduitNetworkHolder {
     @Override
     public void rejectDirection(Direction direction) {
         this.rejectDirections.add(direction);
+    }
+
+    @Override
+    public boolean containsRejection(Direction direction) {
+        return this.rejectDirections.contains(direction);
     }
 
     @Override

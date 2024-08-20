@@ -3,10 +3,10 @@ package dev.vfyjxf.conduitstratus.api.event;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-public sealed interface IEventContext permits IEventContext.Common, IEventContext.Cancelable, IEventContext.Interruptible {
+public sealed interface EventContext permits EventContext.Common, EventContext.Cancelable, EventContext.Interruptible {
 
     @ApiStatus.Internal
-    IEventChannel<?> getChannel();
+    EventChannel<?> getChannel();
 
     @SuppressWarnings("unchecked")
     default <T> T poster() {
@@ -15,7 +15,7 @@ public sealed interface IEventContext permits IEventContext.Common, IEventContex
 
     @Nullable
     default <T> T poster(Class<T> type) {
-        IEventHandler<?> handler = getChannel().handler();
+        EventHandler<?> handler = getChannel().handler();
         if (type.isInstance(handler)) {
             return type.cast(handler);
         }
@@ -29,18 +29,18 @@ public sealed interface IEventContext permits IEventContext.Common, IEventContex
     /**
      * Cancellable/Interruptible
      */
-    final class Common implements IEventContext {
+    final class Common implements EventContext {
 
-        private final IEventChannel<?> channel;
+        private final EventChannel<?> channel;
         private boolean cancelled = false;
         private boolean interrupted = false;
 
-        public Common(IEventChannel<?> channel) {
+        public Common(EventChannel<?> channel) {
             this.channel = channel;
         }
 
         @Override
-        public IEventChannel<?> getChannel() {
+        public EventChannel<?> getChannel() {
             return channel;
         }
 
@@ -64,17 +64,17 @@ public sealed interface IEventContext permits IEventContext.Common, IEventContex
         }
     }
 
-    final class Cancelable implements IEventContext {
+    final class Cancelable implements EventContext {
 
-        private final IEventChannel<?> channel;
+        private final EventChannel<?> channel;
         private boolean cancelled = false;
 
-        public Cancelable(IEventChannel<?> channel) {
+        public Cancelable(EventChannel<?> channel) {
             this.channel = channel;
         }
 
         @Override
-        public IEventChannel<?> getChannel() {
+        public EventChannel<?> getChannel() {
             return channel;
         }
 
@@ -94,17 +94,17 @@ public sealed interface IEventContext permits IEventContext.Common, IEventContex
 
     }
 
-    final class Interruptible implements IEventContext {
+    final class Interruptible implements EventContext {
 
-        private final IEventChannel<?> channel;
+        private final EventChannel<?> channel;
         private boolean interrupted = false;
 
-        public Interruptible(IEventChannel<?> channel) {
+        public Interruptible(EventChannel<?> channel) {
             this.channel = channel;
         }
 
         @Override
-        public IEventChannel<?> getChannel() {
+        public EventChannel<?> getChannel() {
             return channel;
         }
 

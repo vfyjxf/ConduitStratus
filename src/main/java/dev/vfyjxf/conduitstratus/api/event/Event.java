@@ -1,6 +1,6 @@
 package dev.vfyjxf.conduitstratus.api.event;
 
-public interface IEvent<T> {
+public interface Event<T> {
 
     T invoker();
 

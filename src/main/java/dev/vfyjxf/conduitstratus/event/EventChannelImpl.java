@@ -1,41 +1,40 @@
 package dev.vfyjxf.conduitstratus.event;
 
-import dev.vfyjxf.conduitstratus.api.event.IEvent;
-import dev.vfyjxf.conduitstratus.api.event.IEventChannel;
-import dev.vfyjxf.conduitstratus.api.event.IEventDefinition;
-import dev.vfyjxf.conduitstratus.api.event.IEventHandler;
+import dev.vfyjxf.conduitstratus.api.event.Event;
+import dev.vfyjxf.conduitstratus.api.event.EventDefinition;
+import dev.vfyjxf.conduitstratus.api.event.EventHandler;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 
-public class EventChannel<T> implements IEventChannel<T> {
+public class EventChannelImpl<T> implements dev.vfyjxf.conduitstratus.api.event.EventChannel<T> {
 
-    private final IEventHandler<T> handler;
-    private final MutableMap<IEventDefinition<?>, IEvent<?>> listeners = Maps.mutable.empty();
+    private final EventHandler<T> handler;
+    private final MutableMap<EventDefinition<?>, Event<?>> listeners = Maps.mutable.empty();
     private final MutableList<Checker<T>> events = Lists.mutable.empty();
 
-    public EventChannel(IEventHandler<T> handler) {
+    public EventChannelImpl(EventHandler<T> handler) {
         this.handler = handler;
     }
 
     @Override
-    public IEventHandler<T> handler() {
+    public EventHandler<T> handler() {
         return handler;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E extends T> IEvent<E> get(IEventDefinition<E> definition) {
+    public <E extends T> Event<E> get(EventDefinition<E> definition) {
         if (events.noneSatisfy(checker -> checker.check(definition.type()))) {
             throw new IllegalArgumentException("Event type: " + definition.type() + " not allowed");
         }
-        return (IEvent<E>) listeners.getIfAbsentPut(definition, definition::create);
+        return (Event<E>) listeners.getIfAbsentPut(definition, definition::create);
     }
 
     @Override
     public void clearAllListeners() {
-        for (IEvent<?> source : listeners) {
+        for (Event<?> source : listeners) {
             source.clearListeners();
         }
     }

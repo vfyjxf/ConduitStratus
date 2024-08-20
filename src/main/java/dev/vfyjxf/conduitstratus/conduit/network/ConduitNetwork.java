@@ -6,8 +6,7 @@ import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkService;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkServiceType;
-import dev.vfyjxf.conduitstratus.api.event.IEventChannel;
-import dev.vfyjxf.conduitstratus.event.EventChannel;
+import dev.vfyjxf.conduitstratus.api.event.EventChannel;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
@@ -21,7 +20,7 @@ public final class ConduitNetwork implements Network {
 
     public static final Logger logger = LoggerFactory.getLogger("ConduitStratus-ConduitNetwork");
 
-    private final EventChannel<ConduitNetworkEvent> eventChannel = new EventChannel<>(this);
+    private final EventChannel<ConduitNetworkEvent> eventChannelImpl = EventChannel.create(this);
     private final MutableMap<NetworkServiceType<?>, NetworkService<?>> services = Maps.mutable.empty();
     private final MutableList<ConduitNetworkNode> nodes = Lists.mutable.empty();
     private final NetworkTickManager tickManager = new NetworkTickManager();
@@ -51,7 +50,7 @@ public final class ConduitNetwork implements Network {
 
     @Override
     public MutableList<? extends NetworkNode> getNodes() {
-        return nodes.clone();
+        return nodes.asUnmodifiable();
     }
 
     @Override
@@ -96,7 +95,7 @@ public final class ConduitNetwork implements Network {
     }
 
     @Override
-    public IEventChannel<ConduitNetworkEvent> events() {
-        return eventChannel;
+    public EventChannel<ConduitNetworkEvent> events() {
+        return eventChannelImpl;
     }
 }

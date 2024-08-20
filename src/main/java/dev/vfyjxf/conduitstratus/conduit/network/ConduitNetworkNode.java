@@ -91,7 +91,7 @@ public class ConduitNetworkNode implements NetworkNode, ConduitNetworkHolder {
     }
 
     @Override
-    public RichIterable<Direction> getDirections() {
+    public @Unmodifiable RichIterable<Direction> getDirections() {
         return connections.keysView();
     }
 
@@ -113,7 +113,7 @@ public class ConduitNetworkNode implements NetworkNode, ConduitNetworkHolder {
 
     @Nullable
     @Override
-    public NetworkNode getNodeWithDirection(Direction direction) {
+    public NetworkNode getNodeByDirection(Direction direction) {
         NetworkConnection connection = connections.get(direction);
         if (connection == null) return null;
 

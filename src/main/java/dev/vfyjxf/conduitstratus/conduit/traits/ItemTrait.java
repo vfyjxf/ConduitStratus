@@ -1,40 +1,25 @@
 package dev.vfyjxf.conduitstratus.conduit.traits;
 
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.BasicTrait;
+import dev.vfyjxf.conduitstratus.api.conduit.trait.BasicCapabilityTrait;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTraitType;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitConnection;
 import net.minecraft.core.Direction;
-import org.jetbrains.annotations.Nullable;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
 
-public class ItemTrait extends BasicTrait<ItemTrait> {
+public class ItemTrait extends BasicCapabilityTrait<ItemTrait, IItemHandler> {
 
-    protected ItemTrait(NetworkNode holder, Direction direction) {
-        super(holder, direction);
+    protected ItemTrait(
+            ConduitTraitType<ItemTrait> type,
+            NetworkNode holder,
+            Direction direction
+    ) {
+        super(type, holder, direction, Capabilities.ItemHandler.BLOCK);
     }
 
     @Override
-    public ConduitTraitType<ItemTrait> getType() {
-        return null;
-    }
-
-    @Override
-    public @Nullable TraitConnection getConnection() {
-        return null;
-    }
-
-    @Override
-    public boolean perHandle() {
+    public boolean handle(IItemHandler capability) {
         return false;
     }
 
-    @Override
-    public boolean handle() {
-        return false;
-    }
-
-    @Override
-    public boolean postHandle() {
-        return false;
-    }
 }

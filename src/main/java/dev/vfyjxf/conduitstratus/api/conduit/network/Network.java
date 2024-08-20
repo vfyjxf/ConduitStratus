@@ -2,15 +2,13 @@ package dev.vfyjxf.conduitstratus.api.conduit.network;
 
 import dev.vfyjxf.conduitstratus.api.conduit.ConduitType;
 import dev.vfyjxf.conduitstratus.api.conduit.event.ConduitNetworkEvent;
-import dev.vfyjxf.conduitstratus.api.event.IEventHandler;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
+import dev.vfyjxf.conduitstratus.api.event.EventHandler;
 import org.eclipse.collections.api.list.MutableList;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.NonExtendable
-public interface Network extends IEventHandler<ConduitNetworkEvent> {
+public interface Network extends EventHandler<ConduitNetworkEvent> {
 
     /**
      * @return the center node define this network.

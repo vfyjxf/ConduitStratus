@@ -24,6 +24,8 @@ public interface NetworkNode {
      */
     NodeStatus getStatus();
 
+    Network getNetwork();
+
     Conduit getConduit();
 
     BlockEntity getHolder();
@@ -35,8 +37,6 @@ public interface NetworkNode {
     default ServerLevel getLevel() {
         return (ServerLevel) getHolder().getLevel();
     }
-
-    Network getNetwork();
 
     default boolean acceptsTrait(ConduitTrait<?> trait) {
         return getConduit().acceptsTrait(trait);
@@ -68,7 +68,7 @@ public interface NetworkNode {
     RichIterable<NetworkConnection> getConnections();
 
     @Nullable
-    NetworkNode getNodeWithDirection(Direction direction);
+    NetworkNode getNodeByDirection(Direction direction);
 
     void rejectDirection(Direction direction);
 
@@ -92,7 +92,6 @@ public interface NetworkNode {
     }
 
     /**
-     *
      * @param direction the direction to check
      * @return Whether the node can connect to the given direction with a {@link TraitConnection}
      */

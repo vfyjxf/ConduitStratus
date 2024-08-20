@@ -1,12 +1,12 @@
 package dev.vfyjxf.conduitstratus.api.event;
 
-public interface IEventDefinition<T> {
+public interface EventDefinition<T> {
 
     Class<T> type();
 
-    IEvent<T> create();
+    Event<T> create();
 
-    IEvent<T> global();
+    Event<T> global();
 
     default T invoker() {
         return global().invoker();
