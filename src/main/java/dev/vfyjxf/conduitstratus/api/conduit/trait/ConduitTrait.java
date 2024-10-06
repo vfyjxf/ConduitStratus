@@ -2,6 +2,7 @@ package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
 import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
 import dev.vfyjxf.conduitstratus.api.conduit.ConduitIO;
+import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
 import dev.vfyjxf.conduitstratus.api.conduit.event.TraitEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
@@ -14,9 +15,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.fluids.FluidStack;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.set.MutableSet;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 /**
  * The capability create a {@link Conduit} to handle data. such as {@link ItemStack}s, {@link FluidStack}s, etc.
@@ -26,6 +29,10 @@ public interface ConduitTrait<T extends ConduitTrait<T>> extends EventHandler<Tr
     ConduitTraitType<T> getType();
 
     NetworkNode getNode();
+
+    default @Unmodifiable MutableSet<HandleType> handleTypes() {
+        return Sets.mutable.empty();
+    }
 
     default Network getNetwork() {
         return getNode().getNetwork();
@@ -96,13 +103,13 @@ public interface ConduitTrait<T extends ConduitTrait<T>> extends EventHandler<Tr
     /**
      * Additional checks for TraitPlugin.
      */
-    default boolean perHandle() {
+    default boolean perHandle(HandleType handleType) {
         return true;
     }
 
-    boolean handle();
+    boolean handle(HandleType handleType);
 
-    default void postHandle() {
+    default void postHandle(HandleType handleType) {
 
     }
 }

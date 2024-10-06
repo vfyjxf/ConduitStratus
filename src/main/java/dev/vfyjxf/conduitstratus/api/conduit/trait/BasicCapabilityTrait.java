@@ -1,5 +1,6 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
+import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.capabilities.BlockCapability;
@@ -25,12 +26,11 @@ public abstract class BasicCapabilityTrait<T extends ConduitTrait<T>, CAP> exten
     }
 
     @Override
-    public boolean handle() {
+    public boolean handle(HandleType handleType) {
         if (connection != null){
-            return handle(connection.getCapability());
+//            return handle(connection.getCapability());
         }
         return false;
     }
 
-    public abstract boolean handle(CAP capability);
 }

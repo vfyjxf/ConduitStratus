@@ -17,9 +17,4 @@ public class ItemTrait extends BasicCapabilityTrait<ItemTrait, IItemHandler> {
         super(type, holder, direction, Capabilities.ItemHandler.BLOCK);
     }
 
-    @Override
-    public boolean handle(IItemHandler capability) {
-        return false;
-    }
-
 }
