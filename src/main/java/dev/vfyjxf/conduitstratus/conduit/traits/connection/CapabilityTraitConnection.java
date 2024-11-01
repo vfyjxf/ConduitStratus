@@ -16,7 +16,7 @@ public class CapabilityTraitConnection<CAP> implements CapabilityConnection<CAP>
     private final BlockPos pos;
     private final Direction direction;
 
-    public CapabilityTraitConnection(ConduitTrait<?> trait, BlockCapability<? extends CAP, @Nullable Direction> token) {
+    public CapabilityTraitConnection(ConduitTrait trait, BlockCapability<? extends CAP, @Nullable Direction> token) {
         this.level = trait.getLevel();
         this.token = token;
         Direction traitDirection = trait.getDirection();

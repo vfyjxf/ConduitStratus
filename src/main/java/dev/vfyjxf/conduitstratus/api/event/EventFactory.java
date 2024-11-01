@@ -25,6 +25,11 @@ public final class EventFactory {
         return new EventDefinitionImpl<>(type, invokerFactory);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static <T> EventDefinition<T> defineGeneric(Class<? super T> type, Function<List<? extends T>, ? extends T> invokerFactory) {
+        return new EventDefinitionImpl<>(type, (Function) invokerFactory);
+    }
+
     public static <T> Event<T> createEvent(Function<List<T>, T> invokerFactory) {
         return new EventImpl<>(invokerFactory);
     }

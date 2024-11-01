@@ -39,4 +39,8 @@ public enum ChannelColor {
     ChannelColor(int color) {
         this.color = color;
     }
+
+    public int getColor() {
+        return color;
+    }
 }

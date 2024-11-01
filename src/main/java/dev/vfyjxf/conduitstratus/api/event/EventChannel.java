@@ -22,6 +22,8 @@ public interface EventChannel<T> {
         return new EventContext.Interruptible(this);
     }
 
+    void register(Object listenerOwner);
+
     default <E extends T> void register(EventDefinition<E> definition, E listener) {
         get(definition).register(listener);
     }

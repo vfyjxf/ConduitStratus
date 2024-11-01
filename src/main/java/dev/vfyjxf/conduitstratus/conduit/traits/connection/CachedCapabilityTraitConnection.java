@@ -18,12 +18,8 @@ public class CachedCapabilityTraitConnection<CAP> implements CapabilityConnectio
     private final BlockCapabilityCache<? extends CAP, @Nullable Direction> cache;
     private IdentityHashMap<BlockCapability<?, @Nullable Direction>, BlockCapabilityCache<?, @Nullable Direction>> extraCaches = null;
 
-    public CachedCapabilityTraitConnection(ConduitTrait<?> trait, BlockCapability<? extends CAP, @Nullable Direction> token) {
-        if (trait.getLevel() instanceof ServerLevel) {
-            this.level = (ServerLevel) trait.getLevel();
-        } else {
-            throw new IllegalArgumentException("The level must be a ServerLevel");
-        }
+    public CachedCapabilityTraitConnection(ConduitTrait trait, BlockCapability<? extends CAP, @Nullable Direction> token) {
+        this.level = trait.getLevel();
         Direction traitDirection = trait.getDirection();
         BlockPos nodePos = trait.getNode().getPos();
         BlockPos targetPos = nodePos.relative(traitDirection);
@@ -36,8 +32,9 @@ public class CachedCapabilityTraitConnection<CAP> implements CapabilityConnectio
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public BlockCapability<? extends CAP, @Nullable Direction> getToken() {
-        return null;
+        return (BlockCapability<? extends CAP, Direction>) cache.getCapability();
     }
 
     @Override
@@ -48,13 +45,23 @@ public class CachedCapabilityTraitConnection<CAP> implements CapabilityConnectio
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> @Nullable T getCapability(BlockCapability<T, @Nullable Direction> capability) {
         //region lazy init
         if (extraCaches == null) {
-            extraCaches = new IdentityHashMap<>(6);
+            extraCaches = new IdentityHashMap<>(3);// item + fluid + energy + gas -1(we have save one in cache field)
         }
         //endregion
-        return null;
+        if (capability == cache.getCapability()) return (T) cache.getCapability();//fast path
+        extraCaches.computeIfAbsent(capability, key -> BlockCapabilityCache.create(
+                key,
+                level,
+                cache.pos(),
+                cache.context()
+        ));
+        BlockCapabilityCache<?, @Nullable Direction> capabilityCache = extraCaches.get(capability);
+        if (capabilityCache != null) return (T) capabilityCache.getCapability();
+        else return null;
     }
 
     @Override

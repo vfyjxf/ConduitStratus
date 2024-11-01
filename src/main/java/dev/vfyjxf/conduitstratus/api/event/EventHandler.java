@@ -21,6 +21,10 @@ public interface EventHandler<T> {
         return events().get(definition).invoker();
     }
 
+    default void register(Object listenerOwner) {
+        events().register(listenerOwner);
+    }
+
     default <E extends T> E register(EventDefinition<E> definition, E listener) {
         return events().get(definition).register(listener);
     }

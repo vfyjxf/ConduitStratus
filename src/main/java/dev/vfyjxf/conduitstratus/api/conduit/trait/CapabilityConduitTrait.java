@@ -6,7 +6,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import org.jetbrains.annotations.Nullable;
 
-public interface CapabilityConduitTrait<T extends ConduitTrait<T>, CAP> extends ConduitTrait<T> {
+public interface CapabilityConduitTrait<CAP> extends ConduitTrait {
 
     BlockCapability<? extends CAP, @Nullable Direction> getToken();
 
@@ -25,5 +25,15 @@ public interface CapabilityConduitTrait<T extends ConduitTrait<T>, CAP> extends 
         BlockPos pos = getFacingPos();
         Direction direction = getDirection().getOpposite();
         return level.getCapability(getToken(), pos, direction) != null;
+    }
+
+    @Override
+    default boolean injectable() {
+        return ConduitTrait.super.injectable() && getCapability() != null;
+    }
+
+    @Override
+    default boolean extractable() {
+        return ConduitTrait.super.extractable() && getCapability() != null;
     }
 }

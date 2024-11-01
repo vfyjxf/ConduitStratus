@@ -1,6 +1,7 @@
 package dev.vfyjxf.conduitstratus.event;
 
 import dev.vfyjxf.conduitstratus.api.event.Event;
+import dev.vfyjxf.conduitstratus.api.event.EventChannel;
 import dev.vfyjxf.conduitstratus.api.event.EventDefinition;
 import dev.vfyjxf.conduitstratus.api.event.EventHandler;
 import org.eclipse.collections.api.factory.Lists;
@@ -8,7 +9,7 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 
-public class EventChannelImpl<T> implements dev.vfyjxf.conduitstratus.api.event.EventChannel<T> {
+public class EventChannelImpl<T> implements EventChannel<T> {
 
     private final EventHandler<T> handler;
     private final MutableMap<EventDefinition<?>, Event<?>> listeners = Maps.mutable.empty();
@@ -21,6 +22,11 @@ public class EventChannelImpl<T> implements dev.vfyjxf.conduitstratus.api.event.
     @Override
     public EventHandler<T> handler() {
         return handler;
+    }
+
+    @Override
+    public void register(Object listenerOwner) {
+        //TODO:WIP
     }
 
     @SuppressWarnings("unchecked")

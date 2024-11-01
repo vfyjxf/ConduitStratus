@@ -1,15 +1,15 @@
 package dev.vfyjxf.conduitstratus.api.conduit.network;
 
-import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
-import dev.vfyjxf.conduitstratus.api.conduit.ConduitColor;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTrait;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTraitType;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitConnection;
+import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.capabilities.BlockCapability;
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Unmodifiable;
@@ -17,16 +17,10 @@ import org.jetbrains.annotations.Unmodifiable;
 import javax.annotation.Nullable;
 
 @ApiStatus.NonExtendable
+//TODO:Should we allow non-conduit nodes?
 public interface NetworkNode {
 
-    /**
-     * TODO: decide if this is necessary
-     */
-    NodeStatus getStatus();
-
     Network getNetwork();
-
-    Conduit getConduit();
 
     BlockEntity getHolder();
 
@@ -38,20 +32,23 @@ public interface NetworkNode {
         return (ServerLevel) getHolder().getLevel();
     }
 
-    default boolean acceptsTrait(ConduitTrait<?> trait) {
-        return getConduit().acceptsTrait(trait);
-    }
-
-    boolean hasTrait(ConduitTraitType<?> type);
+    boolean hasTrait(TraitType type);
 
     /**
      * @param type the trait type
-     * @param <T>  the trait type
      * @return the list create the attached traits, if the type is not attached, an empty list will be returned.
      */
-    <T extends ConduitTrait<T>> MutableMap<Direction, ? extends ConduitTrait<T>> getTraits(ConduitTraitType<T> type);
+    @Unmodifiable
+    MutableMap<Direction, ? extends ConduitTrait> getTraits(TraitType type);
 
-    MutableMap<ConduitTraitType<?>, MutableMap<Direction, ? extends ConduitTrait<?>>> allTraits();
+    @Unmodifiable
+    MutableList<? extends ConduitTrait> getTraits(Direction direction);
+
+    @Unmodifiable
+    MutableMap<Direction, MutableList<? extends ConduitTrait>> allTraits();
+
+    @Nullable
+    <T, C> T poxyCapability(BlockCapability<T, C> capability, @Nullable C context);
 
     /**
      * @return the directions define existing connections.
@@ -59,13 +56,14 @@ public interface NetworkNode {
     @Unmodifiable
     RichIterable<Direction> getDirections();
 
-    MutableMap<Direction, NetworkConnection> getConnectionsMap();
+    @Unmodifiable
+    MutableMap<Direction, ? extends NodeConnection> getConnectionsMap();
 
     @Nullable
-    NetworkConnection getConnection(Direction direction);
+    NodeConnection getConnection(Direction direction);
 
     @Unmodifiable
-    RichIterable<NetworkConnection> getConnections();
+    RichIterable<? extends NodeConnection> getConnections();
 
     @Nullable
     NetworkNode getNodeByDirection(Direction direction);
@@ -81,9 +79,11 @@ public interface NetworkNode {
 
     boolean connected(Direction direction);
 
+    boolean connected(NetworkNode node);
+
     void disconnect(Direction direction);
 
-    void disconnect(NetworkConnection connection);
+    void disconnect(NodeConnection connection);
 
     default void disconnectAll() {
         for (Direction value : Direction.values()) {
@@ -96,10 +96,6 @@ public interface NetworkNode {
      * @return Whether the node can connect to the given direction with a {@link TraitConnection}
      */
     boolean canWorkWith(Direction direction);
-
-    default ConduitColor getColor() {
-        return getConduit().getColor();
-    }
 
     void tick();
 

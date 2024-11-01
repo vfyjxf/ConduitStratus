@@ -18,6 +18,10 @@ public interface TraitConnection {
      */
     Direction getDirection();
 
+    default Direction getOpposite() {
+        return getDirection().getOpposite();
+    }
+
     void destroy();
 
 }

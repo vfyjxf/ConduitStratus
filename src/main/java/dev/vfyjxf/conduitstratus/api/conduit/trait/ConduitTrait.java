@@ -1,37 +1,56 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
 import dev.vfyjxf.conduitstratus.api.conduit.ConduitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
 import dev.vfyjxf.conduitstratus.api.conduit.event.TraitEvent;
+import dev.vfyjxf.conduitstratus.api.conduit.network.ChannelColor;
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.event.EventHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.fluids.FluidStack;
-import org.eclipse.collections.api.factory.Sets;
-import org.eclipse.collections.api.set.MutableSet;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.map.MutableMap;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
+import org.jetbrains.annotations.Range;
 
 /**
- * The capability create a {@link Conduit} to handle data. such as {@link ItemStack}s, {@link FluidStack}s, etc.
+ * {@link ConduitTrait} defines the behavior of the interaction between the conduit and the block.
  */
-public interface ConduitTrait<T extends ConduitTrait<T>> extends EventHandler<TraitEvent> {
+//TODO:Plugin System
+//TODO:Decide whether to impl data attachment system
+public interface ConduitTrait extends EventHandler<TraitEvent> {
 
-    ConduitTraitType<T> getType();
+    TraitType getType();
+
+    default HandleType getHandleType() {
+        return getType().handleType();
+    }
 
     NetworkNode getNode();
 
-    default @Unmodifiable MutableSet<HandleType> handleTypes() {
-        return Sets.mutable.empty();
+    TraitStatus getStatus();
+
+    @CanIgnoreReturnValue
+    @Contract("_ -> this")
+    ConduitTrait setStatus(TraitStatus status);
+
+    default boolean sleeping() {
+        return getStatus().sleeping();
+    }
+
+    default boolean working() {
+        return getStatus().working();
     }
 
     default Network getNetwork() {
@@ -42,23 +61,43 @@ public interface ConduitTrait<T extends ConduitTrait<T>> extends EventHandler<Tr
         return getNode().getLevel();
     }
 
-    default Conduit getConduit() {
-        return getNode().getConduit();
-    }
-
     /**
      * @return the facing direction of the trait.
      */
     Direction getDirection();
 
+    /**
+     * For types that are used purely for connectivity (e.g., ae networks), we consider all TraitIOs to be BOTH.
+     */
     ConduitIO getIO();
+
+    default ChannelColor getChannel() {
+        return ChannelColor.RED;
+    }
+
+    int priority();
+
+    @CanIgnoreReturnValue
+    @Contract("_ -> this")
+    ConduitTrait setPriority(@Range(from = 0, to = Integer.MAX_VALUE) int priority);
+
+    @MustBeInvokedByOverriders
+    default void saveData(CompoundTag tag, HolderLookup.Provider registries) {
+        tag.putString("io", getIO().toString());
+    }
+
+    @MustBeInvokedByOverriders
+    default void loadData(CompoundTag tag, HolderLookup.Provider registries) {
+
+    }
 
     /**
      * @param conduitIO the io
      * @return this
      */
+    @CanIgnoreReturnValue
     @Contract("_ -> this")
-    ConduitTrait<T> setIO(ConduitIO conduitIO);
+    ConduitTrait setIO(ConduitIO conduitIO);
 
     @Nullable
     default BlockEntity getFacing() {
@@ -74,8 +113,20 @@ public interface ConduitTrait<T extends ConduitTrait<T>> extends EventHandler<Tr
         return getNode().getPos().relative(getDirection());
     }
 
+    default boolean attachable(Conduit conduit) {
+        return true;
+    }
+
     @Nullable
     TraitConnection getConnection();
+
+    default boolean injectable() {
+        return getIO().input() && getConnection() != null;
+    }
+
+    default boolean extractable() {
+        return getIO().output() && getConnection() != null;
+    }
 
     /**
      * @return whether the trait is connectable with facing block.
@@ -96,20 +147,14 @@ public interface ConduitTrait<T extends ConduitTrait<T>> extends EventHandler<Tr
     /**
      * @return the proxy capabilities of the trait.
      */
-    default MutableSet<BlockCapability<?, @Nullable Direction>> proxyCapabilities() {
-        return getType().proxyCapabilities();
+    //TODO:这是否必要？
+    default MutableMap<BlockCapability<?, ?>, ?> proxyCapabilities() {
+        return Maps.mutable.empty();
     }
 
-    /**
-     * Additional checks for TraitPlugin.
-     */
-    default boolean perHandle(HandleType handleType) {
-        return true;
-    }
+    //TODO:更好的io交互api设计
+    //1.要保证个体的独立性，允许个体拒绝来自网络的io请求
+    //2.尊重网络的权利，允许网络管理整个网络的io调度
+    //3.允许个体的特权，个体可以强制进行某些io推送，但其他个体可以拒绝这些推送，网络也可以拒绝这些推送
 
-    boolean handle(HandleType handleType);
-
-    default void postHandle(HandleType handleType) {
-
-    }
 }

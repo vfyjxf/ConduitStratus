@@ -1,15 +1,8 @@
 package dev.vfyjxf.conduitstratus.api.conduit;
 
-import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTrait;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.function.Predicate;
-
-public record HandleType(ResourceLocation uid, Predicate<ConduitTrait<?>> interoperability) {
-
-    public HandleType(ResourceLocation uid) {
-        this(uid, trait -> true);
-    }
+public record HandleType(ResourceLocation id) {
 
     @Override
     public boolean equals(Object o) {
@@ -17,11 +10,11 @@ public record HandleType(ResourceLocation uid, Predicate<ConduitTrait<?>> intero
         if (o == null || getClass() != o.getClass()) return false;
 
         HandleType that = (HandleType) o;
-        return uid.equals(that.uid);
+        return id.equals(that.id);
     }
 
     @Override
     public int hashCode() {
-        return uid.hashCode();
+        return id.hashCode();
     }
 }

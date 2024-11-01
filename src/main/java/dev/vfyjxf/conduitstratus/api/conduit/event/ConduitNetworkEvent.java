@@ -7,6 +7,7 @@ import dev.vfyjxf.conduitstratus.api.event.EventFactory;
 
 import static dev.vfyjxf.conduitstratus.api.event.EventContext.Common;
 
+
 public interface ConduitNetworkEvent extends ConduitEvent {
 
     EventDefinition<OnDataUpdate> onDataUpdate = EventFactory.define(OnDataUpdate.class, listeners -> ((node, data, context) -> {
@@ -33,11 +34,11 @@ public interface ConduitNetworkEvent extends ConduitEvent {
     }
 
     interface OnNodeAdded extends ConduitNetworkEvent {
-            void onNodeAdded(NetworkNode node);
+        void onNodeAdded(NetworkNode node);
     }
 
     interface OnNodeRemoved extends ConduitNetworkEvent {
-            void onNodeRemoved(NetworkNode node);
+        void onNodeRemoved(NetworkNode node);
     }
 
 }
