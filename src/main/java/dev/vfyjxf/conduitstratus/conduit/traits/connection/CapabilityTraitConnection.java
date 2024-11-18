@@ -1,7 +1,7 @@
 package dev.vfyjxf.conduitstratus.conduit.traits.connection;
 
 import dev.vfyjxf.conduitstratus.api.conduit.trait.CapabilityConnection;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTrait;
+import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -16,7 +16,7 @@ public class CapabilityTraitConnection<CAP> implements CapabilityConnection<CAP>
     private final BlockPos pos;
     private final Direction direction;
 
-    public CapabilityTraitConnection(ConduitTrait trait, BlockCapability<? extends CAP, @Nullable Direction> token) {
+    public CapabilityTraitConnection(Trait trait, BlockCapability<? extends CAP, @Nullable Direction> token) {
         this.level = trait.getLevel();
         this.token = token;
         Direction traitDirection = trait.getDirection();

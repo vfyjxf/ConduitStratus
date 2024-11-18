@@ -1,0 +1,6 @@
+{
+  "loader": "conduit_stratus:conduit",
+  "textures": {
+    "particle": "conduit_stratus:block/center_texture"
+  }
+}

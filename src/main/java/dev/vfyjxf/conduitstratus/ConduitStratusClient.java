@@ -1,12 +1,13 @@
 package dev.vfyjxf.conduitstratus;
 
-import dev.vfyjxf.conduitstratus.api.data.lang.LangKeyProvider;
-import net.minecraft.data.DataProvider;
+import dev.vfyjxf.conduitstratus.client.models.ConduitModel;
+import dev.vfyjxf.conduitstratus.utils.Locations;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.client.event.ModelEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,13 +17,12 @@ public class ConduitStratusClient extends ConduitStratus {
 
     public ConduitStratusClient(IEventBus modEventBus, ModContainer modContainer) {
         super(modEventBus, modContainer);
-        modEventBus.addListener((GatherDataEvent event) -> {
-            event.getGenerator().addProvider(
-                    event.includeClient(),
-                    (DataProvider.Factory<DataProvider>) (output) -> new LangKeyProvider(Constants.MOD_ID, output)
-            );
-        });
+        modEventBus.register(this);
     }
 
+    @SubscribeEvent
+    private void registerModelLoader(ModelEvent.RegisterGeometryLoaders event) {
+        event.register(Locations.of("conduit"), new ConduitModel.Loader());
+    }
 
 }

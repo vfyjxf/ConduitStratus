@@ -17,7 +17,7 @@ public final class Locations {
         return ResourceLocation.tryParse(location);
     }
 
-    public static ResourceLocation of(String namespace, String path) {
+    public static ResourceLocation create(String namespace, String path) {
         return ResourceLocation.fromNamespaceAndPath(namespace, path);
     }
 
@@ -25,7 +25,7 @@ public final class Locations {
         return ResourceLocation.withDefaultNamespace(path);
     }
 
-    public static ResourceLocation create(String path) {
+    public static ResourceLocation of(String path) {
         return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, path);
     }
 

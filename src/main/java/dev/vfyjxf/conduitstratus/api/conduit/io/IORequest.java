@@ -1,6 +1,6 @@
 package dev.vfyjxf.conduitstratus.api.conduit.io;
 
-import dev.vfyjxf.conduitstratus.api.conduit.ConduitIO;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
 
 /**
@@ -11,11 +11,11 @@ public interface IORequest {
     HandleType type();
 
     /**
-     * NOTE:Only support {@link ConduitIO#INPUT} or {@link ConduitIO#OUTPUT}
+     * NOTE:Only support {@link TraitIO#INPUT} or {@link TraitIO#OUTPUT}
      *
      * @return the IO of the request
      */
-    ConduitIO getIO();
+    TraitIO getIO();
 
     default boolean input() {
         return getIO().input();

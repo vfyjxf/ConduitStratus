@@ -9,6 +9,8 @@ public interface LogisticManager<TRAIT extends TransferTrait<REQUEST, RESPONSE>,
 
     HandleType getHandleType();
 
+    NetworkChannels<TRAIT> createChannels(Network network);
+
     /**
      * @param network     the conduit network
      * @param channels    the channels to handle

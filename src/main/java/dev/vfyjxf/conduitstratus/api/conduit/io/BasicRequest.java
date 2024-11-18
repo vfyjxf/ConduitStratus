@@ -1,19 +1,19 @@
 package dev.vfyjxf.conduitstratus.api.conduit.io;
 
-import dev.vfyjxf.conduitstratus.api.conduit.ConduitIO;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.utils.Checks;
 
 public abstract class BasicRequest implements IORequest {
 
-    protected final ConduitIO io;
+    protected final TraitIO io;
 
-    protected BasicRequest(ConduitIO io) {
-        Checks.checkArgument(io == ConduitIO.INPUT || io == ConduitIO.OUTPUT, "IO must be INPUT or OUTPUT");
+    protected BasicRequest(TraitIO io) {
+        Checks.checkArgument(io == TraitIO.INPUT || io == TraitIO.OUTPUT, "IO must be INPUT or OUTPUT");
         this.io = io;
     }
 
     @Override
-    public ConduitIO getIO() {
+    public TraitIO getIO() {
         return io;
     }
 }

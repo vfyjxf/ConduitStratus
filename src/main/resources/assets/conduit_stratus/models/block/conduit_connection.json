@@ -1,0 +1,36 @@
+{
+	"credit": "Made with Blockbench",
+	"textures": {
+		"particle": "conduit_stratus:block/center_connection",
+		"center_connection": "conduit_stratus:block/center_connection",
+		"connection_part": "conduit_stratus:block/connection_part"
+	},
+	"elements": [
+		{
+			"from": [5.5, 5.5, 3],
+			"to": [10.5, 10.5, 6],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 4.5]},
+			"faces": {
+				"north": {"uv": [0, 0, 5, 5], "texture": "#center_connection"},
+				"east": {"uv": [0, 5, 3, 10], "texture": "#center_connection"},
+				"south": {"uv": [0, 0, 5, 5], "texture": "#center_connection"},
+				"west": {"uv": [0, 5, 3, 10], "texture": "#center_connection"},
+				"up": {"uv": [10, 3, 5, 0], "texture": "#center_connection"},
+				"down": {"uv": [8, 5, 3, 8], "texture": "#center_connection"}
+			}
+		},
+		{
+			"from": [5, 5, 0],
+			"to": [11, 11, 4],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 3]},
+			"faces": {
+				"north": {"uv": [0, 0, 6, 6], "texture": "#connection_part"},
+				"east": {"uv": [0, 6, 4, 12], "texture": "#connection_part"},
+				"south": {"uv": [0, 0, 6, 6], "texture": "#connection_part"},
+				"west": {"uv": [0, 6, 4, 12], "texture": "#connection_part"},
+				"up": {"uv": [12, 4, 6, 0], "texture": "#connection_part"},
+				"down": {"uv": [12, 0, 6, 4], "texture": "#connection_part"}
+			}
+		}
+	]
+}

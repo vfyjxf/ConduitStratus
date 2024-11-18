@@ -1,0 +1,22 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "MIT License"
+[[mods]]
+modId = "datagen_mod"
+version = "0.0.1"
+displayName = "DataGen Mod"
+
+authors = "vfyjxf"
+description = '''Datagen of a mod'''
+
+[[dependencies.datagen_mod]]
+modId = "neoforge"
+type = "required"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.datagen_mod]]
+modId = "minecraft"
+type = "required"
+ordering = "NONE"
+side = "BOTH"

@@ -1,6 +1,6 @@
 package dev.vfyjxf.conduitstratus.conduit.traits.item;
 
-import dev.vfyjxf.conduitstratus.api.conduit.ConduitIO;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.BasicTransferCapabilityTrait;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitStatus;
@@ -28,8 +28,8 @@ public abstract class ItemTransferTrait extends BasicTransferCapabilityTrait<IIt
     }
 
     @Override
-    public ItemTransferTrait setIO(ConduitIO conduitIO) {
-        super.setIO(conduitIO);
+    public ItemTransferTrait setIO(TraitIO traitIO) {
+        super.setIO(traitIO);
         return this;
     }
 

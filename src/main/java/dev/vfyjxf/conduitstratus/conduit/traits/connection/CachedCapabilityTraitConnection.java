@@ -1,7 +1,7 @@
 package dev.vfyjxf.conduitstratus.conduit.traits.connection;
 
 import dev.vfyjxf.conduitstratus.api.conduit.trait.CapabilityConnection;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTrait;
+import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -18,7 +18,7 @@ public class CachedCapabilityTraitConnection<CAP> implements CapabilityConnectio
     private final BlockCapabilityCache<? extends CAP, @Nullable Direction> cache;
     private IdentityHashMap<BlockCapability<?, @Nullable Direction>, BlockCapabilityCache<?, @Nullable Direction>> extraCaches = null;
 
-    public CachedCapabilityTraitConnection(ConduitTrait trait, BlockCapability<? extends CAP, @Nullable Direction> token) {
+    public CachedCapabilityTraitConnection(Trait trait, BlockCapability<? extends CAP, @Nullable Direction> token) {
         this.level = trait.getLevel();
         Direction traitDirection = trait.getDirection();
         BlockPos nodePos = trait.getNode().getPos();

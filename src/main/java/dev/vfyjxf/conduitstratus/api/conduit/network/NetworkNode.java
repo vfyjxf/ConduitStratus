@@ -1,6 +1,6 @@
 package dev.vfyjxf.conduitstratus.api.conduit.network;
 
-import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTrait;
+import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitConnection;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
 import net.minecraft.core.BlockPos;
@@ -17,8 +17,9 @@ import org.jetbrains.annotations.Unmodifiable;
 import javax.annotation.Nullable;
 
 @ApiStatus.NonExtendable
-//TODO:Should we allow non-conduit nodes?
 public interface NetworkNode {
+
+    String identifier();
 
     Network getNetwork();
 
@@ -32,6 +33,8 @@ public interface NetworkNode {
         return (ServerLevel) getHolder().getLevel();
     }
 
+    void addTrait(Direction direction, Trait trait);
+
     boolean hasTrait(TraitType type);
 
     /**
@@ -39,13 +42,13 @@ public interface NetworkNode {
      * @return the list create the attached traits, if the type is not attached, an empty list will be returned.
      */
     @Unmodifiable
-    MutableMap<Direction, ? extends ConduitTrait> getTraits(TraitType type);
+    MutableMap<Direction, ? extends Trait> getTraits(TraitType type);
 
     @Unmodifiable
-    MutableList<? extends ConduitTrait> getTraits(Direction direction);
+    MutableList<? extends Trait> getTraits(Direction direction);
 
     @Unmodifiable
-    MutableMap<Direction, MutableList<? extends ConduitTrait>> allTraits();
+    MutableMap<Direction, MutableList<Trait>> allTraits();
 
     @Nullable
     <T, C> T poxyCapability(BlockCapability<T, C> capability, @Nullable C context);
@@ -67,15 +70,6 @@ public interface NetworkNode {
 
     @Nullable
     NetworkNode getNodeByDirection(Direction direction);
-
-    void rejectDirection(Direction direction);
-
-    @ApiStatus.Internal
-    boolean containsRejection(Direction direction);
-
-    void removeRejection(Direction direction);
-
-    boolean connectable(Direction direction, NetworkNode node);
 
     boolean connected(Direction direction);
 

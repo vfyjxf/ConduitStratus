@@ -1,8 +1,8 @@
 package dev.vfyjxf.conduitstratus.api.conduit.network;
 
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
-import dev.vfyjxf.conduitstratus.api.conduit.event.ConduitNetworkEvent;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTrait;
+import dev.vfyjxf.conduitstratus.api.conduit.event.NetworkEvent;
+import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
 import dev.vfyjxf.conduitstratus.api.event.EventHandler;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
@@ -10,8 +10,10 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+import java.util.function.Predicate;
+
 @ApiStatus.NonExtendable
-public interface Network extends EventHandler<ConduitNetworkEvent> {
+public interface Network extends EventHandler<NetworkEvent> {
 
     /**
      * @return the center node define this network.
@@ -43,10 +45,12 @@ public interface Network extends EventHandler<ConduitNetworkEvent> {
     @Unmodifiable
     MutableMap<HandleType, ? extends NetworkChannels<?>> getChannels();
 
-    <T extends ConduitTrait> NetworkChannels<T> getChannel(HandleType type);
+    <TRAIT extends Trait> NetworkChannels<TRAIT> createChannels(HandleType handleType, Predicate<Trait> traitPredicate);
+
+    <T extends Trait> NetworkChannels<T> getChannel(HandleType type);
 
     boolean updateNetwork();
 
-    void tick();
+    void tick(long currentTick);
 
 }

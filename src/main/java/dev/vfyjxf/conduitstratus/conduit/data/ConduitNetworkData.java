@@ -1,13 +1,14 @@
 package dev.vfyjxf.conduitstratus.conduit.data;
 
+import dev.vfyjxf.conduitstratus.api.conduit.data.NetworkData;
 import dev.vfyjxf.conduitstratus.api.conduit.data.NetworkDataType;
-import dev.vfyjxf.conduitstratus.api.conduit.event.ConduitNetworkEvent;
+import dev.vfyjxf.conduitstratus.api.conduit.event.NetworkEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 
 import java.util.Objects;
 
-public class ConduitNetworkData<T> implements dev.vfyjxf.conduitstratus.api.conduit.data.NetworkData<T> {
+public class ConduitNetworkData<T> implements NetworkData<T> {
 
     private final NetworkNode node;
     private final NetworkDataType<T> type;
@@ -38,7 +39,7 @@ public class ConduitNetworkData<T> implements dev.vfyjxf.conduitstratus.api.cond
     public void set(T value) {
         Network network = this.node.getNetwork();
         var context = network.common();
-        network.listeners(ConduitNetworkEvent.onDataUpdate).onNetworkDataUpdate(node, this, context);
+        network.listeners(NetworkEvent.onDataUpdate).onNetworkDataUpdate(node, this, context);
         if (context.cancelled()) return;
 
         this.value = value;

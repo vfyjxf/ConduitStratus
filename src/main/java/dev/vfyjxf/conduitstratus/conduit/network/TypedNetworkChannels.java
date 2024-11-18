@@ -1,11 +1,11 @@
 package dev.vfyjxf.conduitstratus.conduit.network;
 
-import dev.vfyjxf.conduitstratus.api.conduit.ConduitIO;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
 import dev.vfyjxf.conduitstratus.api.conduit.network.ChannelColor;
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkChannels;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.ConduitTrait;
+import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
@@ -14,19 +14,23 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.map.mutable.MapAdapter;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.EnumMap;
+import java.util.function.Predicate;
 
 @ApiStatus.Internal
-public class TypedNetworkChannels<TRAIT extends ConduitTrait> implements NetworkChannels<TRAIT> {
+//TODO:Path calculation
+public class TypedNetworkChannels<TRAIT extends Trait> implements NetworkChannels<TRAIT> {
 
     private final Network network;
     private final HandleType handleType;
-    private final FixedSizeMap<ConduitIO, MutableList<TRAIT>> allTraits = Maps.fixedSize.with(
-            ConduitIO.INPUT, Lists.mutable.empty(),
-            ConduitIO.OUTPUT, Lists.mutable.empty(),
-            ConduitIO.BOTH, Lists.mutable.empty()
+    private final Predicate<Trait> traitPredicate;
+    private final FixedSizeMap<TraitIO, MutableList<TRAIT>> allTraits = Maps.fixedSize.with(
+            TraitIO.INPUT, Lists.mutable.empty(),
+            TraitIO.OUTPUT, Lists.mutable.empty(),
+            TraitIO.BOTH, Lists.mutable.empty()
     );
     /**
      * Note: 通常为少量多次的更新
@@ -34,9 +38,12 @@ public class TypedNetworkChannels<TRAIT extends ConduitTrait> implements Network
      */
     private final MutableMap<ChannelColor, MutableMap<TRAIT, MutableList<? extends TRAIT>>> mappedByChannel = MapAdapter.adapt(new EnumMap<>(ChannelColor.class));
 
-    public TypedNetworkChannels(Network network, HandleType handleType) {
+    private MutableList<ToAddTrait<TRAIT>> toAddTraits = Lists.mutable.empty();
+
+    public TypedNetworkChannels(Network network, HandleType handleType, Predicate<Trait> traitPredicate) {
         this.network = network;
         this.handleType = handleType;
+        this.traitPredicate = traitPredicate;
     }
 
     @Override
@@ -47,6 +54,11 @@ public class TypedNetworkChannels<TRAIT extends ConduitTrait> implements Network
     @Override
     public HandleType getHandleType() {
         return handleType;
+    }
+
+    @Override
+    public boolean accept(Trait trait) {
+        return traitPredicate.test(trait);
     }
 
     @Override
@@ -84,21 +96,21 @@ public class TypedNetworkChannels<TRAIT extends ConduitTrait> implements Network
     }
 
     @Override
-    public MutableList<? extends TRAIT> getByIO(ConduitIO conduitIO) {
-        return allTraits.get(conduitIO).asUnmodifiable();
+    public MutableList<? extends TRAIT> getByIO(TraitIO traitIO) {
+        return allTraits.get(traitIO).asUnmodifiable();
     }
 
     @Override
     public MutableList<? extends TRAIT> getImporters() {
-        MutableList<TRAIT> inputs = allTraits.get(ConduitIO.INPUT);
-        inputs.addAll(allTraits.get(ConduitIO.BOTH));
+        MutableList<TRAIT> inputs = allTraits.get(TraitIO.INPUT);
+        inputs.addAll(allTraits.get(TraitIO.BOTH));
         return inputs;
     }
 
     @Override
     public MutableList<? extends TRAIT> getExporters() {
-        MutableList<TRAIT> outputs = allTraits.get(ConduitIO.OUTPUT);
-        outputs.addAll(allTraits.get(ConduitIO.BOTH));
+        MutableList<TRAIT> outputs = allTraits.get(TraitIO.OUTPUT);
+        outputs.addAll(allTraits.get(TraitIO.BOTH));
         return outputs;
     }
 
@@ -109,6 +121,9 @@ public class TypedNetworkChannels<TRAIT extends ConduitTrait> implements Network
 
     @Override
     public NetworkChannels<TRAIT> addTrait(TRAIT trait) {
+        if (!accept(trait)) {
+            throw new IllegalArgumentException("The trait: " + trait + "of type:" + trait.getHandleType() + " is not accepted by the channel: " + trait);
+        }
         if (!trait.getIO().doAny()) return this;
         //TODO:implement
         updateIOMaps(trait, false);
@@ -124,6 +139,13 @@ public class TypedNetworkChannels<TRAIT extends ConduitTrait> implements Network
 
     private void updateIOMaps(TRAIT trait, boolean remove) {
         //TODO:implement
+    }
+
+    private record ToAddTrait<TRAIT extends Trait>(
+            @Nullable ChannelColor oldChannel, ChannelColor nextChannel,
+            TraitIO oldIO, TraitIO nextIO,
+            TRAIT trait) {
+
     }
 
 }

@@ -18,12 +18,16 @@ public class ItemLogisticManager implements LogisticManager<ItemTransferTrait, I
     }
 
     @Override
+    public NetworkChannels<ItemTransferTrait> createChannels(Network network) {
+        return network.createChannels(getHandleType(), ItemTransferTrait.class::isInstance);
+    }
+
+    @Override
     public void tickTraits(Network network, NetworkChannels<ItemTransferTrait> channels, long currentTick) {
         for (var ioMap : channels.mapped()) {
             ioMap.forEachKeyValue((exporter, importers) -> {
                 TraitStatus exporterStatus = exporter.getStatus();
                 if (exporterStatus.working() && exporterStatus.shouldTick(currentTick)) {
-//                    var exporterExtension = exporter.extension();
                     for (var importer : importers) {
 
                     }

@@ -8,7 +8,7 @@ import dev.vfyjxf.conduitstratus.conduit.traits.item.ItemRequest;
 import dev.vfyjxf.conduitstratus.conduit.traits.item.ItemResponse;
 
 
-public interface TraitEvent extends ConduitEvent {
+public interface TraitEvent {
 
     EventDefinition<OnTraitTick<TransferTrait<ItemRequest, ItemResponse>>> onItemTraitTick = EventFactory.defineGeneric(
             OnTraitTick.class,

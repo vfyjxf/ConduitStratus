@@ -15,7 +15,7 @@ neoForge {
         data {
             data()
             gameDirectory = project.file('run-data')
-            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+            programArguments.addAll '--mod', rootProject.mod_id, '--all', '--output', rootProject.file('src/generated/resources/').getAbsolutePath(), '--existing', rootProject.file('src/main/resources/').getAbsolutePath()
         }
 
         configureEach {
@@ -34,7 +34,7 @@ neoForge {
 dependencies {
     implementation(rootProject)
 
-    additionalRuntimeClasspath(implementation("org.eclipse.collections:eclipse-collections-api:11.1.0"))
-    additionalRuntimeClasspath(implementation("org.eclipse.collections:eclipse-collections:11.1.0"))
+    compileOnly("org.eclipse.collections:eclipse-collections-api:11.1.0")
+    compileOnly("org.eclipse.collections:eclipse-collections:11.1.0")
 }
 sourceSets.main.resources { srcDir 'src/generated/resources' }

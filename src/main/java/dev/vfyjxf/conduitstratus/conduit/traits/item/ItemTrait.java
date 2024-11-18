@@ -22,6 +22,11 @@ public class ItemTrait extends ItemTransferTrait implements PoxyTrait<IItemHandl
     }
 
     @Override
+    public boolean hasRequest() {
+        return false;
+    }
+
+    @Override
     public ItemRequest sendRequest() {
         return null;
     }

@@ -22,9 +22,7 @@ public class ManagedNetworkNode implements InitNetworkNode {
         }
 
         public ConduitNetworkNode createNode() {
-            ConduitNetworkNode node = new ConduitNetworkNode(holder);
-            node.loadData(data);
-            return node;
+            return new ConduitNetworkNode(holder);
         }
     }
 
@@ -73,7 +71,9 @@ public class ManagedNetworkNode implements InitNetworkNode {
                 throw new IllegalStateException("The node has been built.");
             }
             var node = initData.createNode();
-            node.loadData(initData.data.getCompound(nodeDataKey));
+            if (initData.data != null) {
+                node.loadData(initData.data.getCompound(nodeDataKey));
+            }
             this.node = node;
             this.node.onReady();
         }

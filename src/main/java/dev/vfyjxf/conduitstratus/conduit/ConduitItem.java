@@ -1,18 +1,23 @@
 package dev.vfyjxf.conduitstratus.conduit;
 
+import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
 import dev.vfyjxf.conduitstratus.api.conduit.ConduitColor;
 import net.minecraft.world.item.Item;
 
-public class ConduitItem extends Item {
+public class ConduitItem<T extends Conduit> extends Item {
 
-    private final ConduitColor color;
+    private final T conduit;
 
-    public ConduitItem(ConduitColor color, Properties properties) {
+    public ConduitItem(T conduit, Properties properties) {
         super(properties);
-        this.color = color;
+        this.conduit = conduit;
+    }
+
+    public T getConduit() {
+        return conduit;
     }
 
     public ConduitColor getColor() {
-        return color;
+        return conduit.color();
     }
 }

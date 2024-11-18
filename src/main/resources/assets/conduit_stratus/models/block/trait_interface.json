@@ -1,0 +1,64 @@
+{
+	"credit": "Made with Blockbench",
+	"textures": {
+		"particle": "conduit_stratus:block/traits/interface_sides",
+		"interface_sides": "conduit_stratus:block/traits/interface_sides",
+		"part1": "conduit_stratus:block/traits/part1",
+		"part2": "conduit_stratus:block/traits/part2",
+		"part3": "conduit_stratus:block/traits/part3"
+	},
+	"elements": [
+		{
+			"from": [1, 1, 0],
+			"to": [15, 15, 2],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 4.5]},
+			"faces": {
+				"north": {"uv": [0, 0, 7, 7], "texture": "#interface_sides"},
+				"east": {"uv": [7, 0, 8, 7], "texture": "#interface_sides"},
+				"south": {"uv": [0, 7, 7, 14], "texture": "#interface_sides"},
+				"west": {"uv": [7, 7, 8, 14], "texture": "#interface_sides"},
+				"up": {"uv": [15, 1, 8, 0], "texture": "#interface_sides"},
+				"down": {"uv": [15, 1, 8, 2], "texture": "#interface_sides"}
+			}
+		},
+		{
+			"from": [4, 4, 1.5],
+			"to": [12, 12, 2.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 4.5]},
+			"faces": {
+				"north": {"uv": [0, 0, 4, 4], "texture": "#part1"},
+				"east": {"uv": [0, 4, 0.5, 8], "texture": "#part1"},
+				"south": {"uv": [0, 0, 4, 4], "texture": "#part1"},
+				"west": {"uv": [4, 0, 4.5, 4], "texture": "#part1"},
+				"up": {"uv": [4.5, 4.5, 0.5, 4], "texture": "#part1"},
+				"down": {"uv": [8.5, 0, 4.5, 0.5], "texture": "#part1"}
+			}
+		},
+		{
+			"from": [5, 5, 2],
+			"to": [11, 11, 4],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 4.5]},
+			"faces": {
+				"north": {"uv": [0, 0, 6, 6], "texture": "#part2"},
+				"east": {"uv": [0, 6, 2, 12], "texture": "#part2"},
+				"south": {"uv": [0, 0, 6, 6], "texture": "#part2"},
+				"west": {"uv": [6, 0, 8, 6], "texture": "#part2"},
+				"up": {"uv": [8, 8, 2, 6], "texture": "#part2"},
+				"down": {"uv": [14, 0, 8, 2], "texture": "#part2"}
+			}
+		},
+		{
+			"from": [5.5, 5.5, 3],
+			"to": [10.5, 10.5, 6],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 3.5]},
+			"faces": {
+				"north": {"uv": [0, 0, 5, 5], "texture": "#part3"},
+				"east": {"uv": [0, 5, 3, 10], "texture": "#part3"},
+				"south": {"uv": [0, 0, 5, 5], "texture": "#part3"},
+				"west": {"uv": [0, 5, 3, 10], "texture": "#part3"},
+				"up": {"uv": [10, 3, 5, 0], "texture": "#part3"},
+				"down": {"uv": [8, 5, 3, 8], "texture": "#part3"}
+			}
+		}
+	]
+}

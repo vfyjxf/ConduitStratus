@@ -14,6 +14,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -62,29 +63,43 @@ public final class TickDispatcher {
         initBlockEntities.clear();
     }
 
-    private void onServerTickPre(LevelTickEvent.Pre event) {
-        if (!(event.getLevel() instanceof ServerLevel)) {
-            return;
+    private void onServerTickPre(ServerTickEvent.Pre event) {
+        for (ConduitNetwork network : tickingNetworks.networks) {
+            network.tick(currentTick());
         }
     }
 
-    private void onServerTickPost(LevelTickEvent.Post event) {
+    private void onServerTickPost(ServerTickEvent.Post event) {
+        tickCount++;
+    }
+
+    private void onServerLevelTickPre(LevelTickEvent.Pre event) {
+        if (!(event.getLevel() instanceof ServerLevel level)) {
+            return;
+        }
+        tickingNetworks.updateNetworks();
+    }
+
+    private void onServerLevelTickPost(LevelTickEvent.Post event) {
         if (!(event.getLevel() instanceof ServerLevel level)) {
             return;
         }
         Long2ObjectMap<MutableList<Pair<BlockEntity, Runnable>>> initEntities = initBlockEntities.getInitEntities(level);
         if (initEntities == null) return;
-
-        tickCount++;
-    }
-
-    private void onServerLevelTickPre(LevelTickEvent.Pre event) {
-        if (!(event.getLevel() instanceof ServerLevel)) {
-            return;
+        var toInit = initEntities.keySet().toLongArray();
+        for (long toInitPos : toInit) {
+            if (level.getChunkSource().isPositionTicking(toInitPos)) {
+                MutableList<Pair<BlockEntity, Runnable>> toInitChunk = initEntities.remove(toInitPos);
+                if (toInitChunk == null) {
+                    continue;
+                }
+                for (var initAction : toInitChunk) {
+                    if (!initAction.getKey().isRemoved()) {
+                        initAction.getValue().run();
+                    }
+                }
+            }
         }
-    }
-
-    private void onServerLevelTickPost(LevelTickEvent.Post event) {
     }
 
     private void onUnloadChunk(ChunkEvent.Unload event) {
@@ -95,9 +110,9 @@ public final class TickDispatcher {
 
 
     private static class TickingNetworks {
-        private MutableList<ConduitNetwork> networks;
-        private MutableList<ConduitNetwork> toAdd;
-        private MutableList<ConduitNetwork> toRemove;
+        private final MutableList<ConduitNetwork> networks;
+        private final MutableList<ConduitNetwork> toAdd;
+        private final MutableList<ConduitNetwork> toRemove;
 
         public TickingNetworks() {
             this.networks = Lists.mutable.empty();

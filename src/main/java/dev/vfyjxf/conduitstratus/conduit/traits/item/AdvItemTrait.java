@@ -19,6 +19,11 @@ public class AdvItemTrait extends ItemTransferTrait implements PoxyTrait<IItemHa
     }
 
     @Override
+    public boolean hasRequest() {
+        return false;
+    }
+
+    @Override
     public ItemRequest sendRequest() {
         return null;
     }

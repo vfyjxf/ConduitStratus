@@ -1,6 +1,6 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
-import dev.vfyjxf.conduitstratus.api.conduit.ConduitIO;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.capabilities.BlockCapability;
@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class BasicCapabilityTrait<CAP>
         extends BasicTrait<CapabilityConnection<CAP>>
-        implements CapabilityConduitTrait<CAP> {
+        implements CapabilityTrait<CAP> {
 
     protected final BlockCapability<? extends CAP, @Nullable Direction> token;
 
@@ -29,8 +29,8 @@ public abstract class BasicCapabilityTrait<CAP>
     }
 
     @Override
-    public BasicCapabilityTrait<CAP> setIO(ConduitIO conduitIO) {
-        super.setIO(conduitIO);
+    public BasicCapabilityTrait<CAP> setIO(TraitIO traitIO) {
+        super.setIO(traitIO);
         return this;
     }
 
