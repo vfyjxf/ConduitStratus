@@ -27,6 +27,7 @@ public abstract class BasicTrait<C extends TraitConnection> implements Trait {
     @Nullable
     protected C connection;
     protected int priority = 0;
+    protected final String identifier = "";
 
     protected BasicTrait(TraitType type, NetworkNode holder, Direction direction) {
         this.type = type;
@@ -53,6 +54,11 @@ public abstract class BasicTrait<C extends TraitConnection> implements Trait {
     public BasicTrait<C> setStatus(TraitStatus status) {
         this.status = status;
         return this;
+    }
+
+    @Override
+    public String identifier() {
+        return identifier;
     }
 
     @Override
@@ -94,20 +100,20 @@ public abstract class BasicTrait<C extends TraitConnection> implements Trait {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "ConstantConditions"})
     public <T> T get(DataKey<T> key) {
         return (T) dataMap.get(key);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "ConstantConditions"})
     public <T> T detach(DataKey<T> key) {
         return (T) dataMap.remove(key);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T> T getOr(DataKey<T> key, T defaultValue) {
+    @SuppressWarnings({"unchecked", "ConstantConditions"})
+    public <T> T getOrDefault(DataKey<T> key, @Nullable T defaultValue) {
         return (T) dataMap.getOrDefault(key, defaultValue);
     }
 

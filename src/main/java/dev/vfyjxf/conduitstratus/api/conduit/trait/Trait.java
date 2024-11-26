@@ -2,14 +2,15 @@ package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
-import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.data.DataAttachable;
 import dev.vfyjxf.conduitstratus.api.conduit.event.TraitEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.network.ChannelColor;
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.event.EventHandler;
+import dev.vfyjxf.conduitstratus.utils.LevelHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -26,7 +27,6 @@ import org.jetbrains.annotations.Range;
  * {@link Trait} defines the behavior of the interaction between the conduit and the block.
  */
 //TODO:Plugin System
-//TODO:Decide whether to impl data attachment system yes
 //TODO:Add identifier
 public interface Trait extends EventHandler<TraitEvent>, DataAttachable {
 
@@ -39,6 +39,8 @@ public interface Trait extends EventHandler<TraitEvent>, DataAttachable {
     NetworkNode getNode();
 
     TraitStatus getStatus();
+
+    String identifier();
 
     @CanIgnoreReturnValue
     @Contract("_ -> this")
@@ -104,9 +106,7 @@ public interface Trait extends EventHandler<TraitEvent>, DataAttachable {
         NetworkNode node = getNode();
         Level level = node.getLevel();
         BlockPos target = node.getPos().relative(getDirection());
-        if (level.isLoaded(target)) {
-            return level.getBlockEntity(target);
-        } else return null;
+        return LevelHelper.getBlockEntity(level, target);
     }
 
     default BlockPos getFacingPos() {

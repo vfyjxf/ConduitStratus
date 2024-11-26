@@ -4,6 +4,7 @@ import dev.vfyjxf.conduitstratus.api.conduit.data.NetworkData;
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
+import dev.vfyjxf.conduitstratus.api.event.EventBase;
 import dev.vfyjxf.conduitstratus.api.event.EventDefinition;
 import dev.vfyjxf.conduitstratus.api.event.EventFactory;
 
@@ -11,6 +12,7 @@ import static dev.vfyjxf.conduitstratus.api.event.EventContext.Cancelable;
 import static dev.vfyjxf.conduitstratus.api.event.EventContext.Common;
 
 
+@EventBase
 public interface NetworkEvent {
 
     EventDefinition<OnDataUpdate> onDataUpdate = EventFactory.define(OnDataUpdate.class, listeners -> ((node, data, context) -> {
@@ -35,7 +37,6 @@ public interface NetworkEvent {
     EventDefinition<OnNetworkTick> onNetworkTick = EventFactory.define(OnNetworkTick.class, listeners -> (network, context) -> {
         for (var listener : listeners) {
             listener.onNetworkTick(network, context);
-            if (context.interrupted()) return;
         }
     });
 

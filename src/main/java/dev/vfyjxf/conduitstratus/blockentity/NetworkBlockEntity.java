@@ -42,7 +42,7 @@ public abstract class NetworkBlockEntity extends BlockEntity {
             BlockState blockState = getBlockState();
 
             if (!alreadyUpdated) {
-                this.level.sendBlockUpdated(this.worldPosition, blockState, blockState, Block.UPDATE_NEIGHBORS);
+                this.level.sendBlockUpdated(this.worldPosition, blockState, blockState, Block.UPDATE_ALL);
             }
         }
     }
@@ -60,6 +60,18 @@ public abstract class NetworkBlockEntity extends BlockEntity {
         }
     }
 
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        this.networkNode.destroy();
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        this.networkNode.destroy();
+    }
 
     public final boolean isLoaded() {
         return level != null && level.isLoaded(getBlockPos());

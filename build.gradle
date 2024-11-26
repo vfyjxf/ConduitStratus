@@ -64,7 +64,7 @@ neoForge {
     }
 
     // accessTransformers.add('src/main/resources/META-INF/accesstransformer.cfg')
-    runs{
+    runs {
         client {
             client()
             gameDirectory = project.file('run-client')

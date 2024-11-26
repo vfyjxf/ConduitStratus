@@ -89,7 +89,7 @@ public sealed interface EventContext permits EventContext.Common, EventContext.C
 
         @Override
         public boolean interrupted() {
-            return cancelled;
+            return false;
         }
 
     }

@@ -10,6 +10,15 @@ public class ConduitConnections {
     private final EnumSet<Direction> conduitConnections = EnumSet.noneOf(Direction.class);
     private final EnumSet<Direction> traitConnections = EnumSet.noneOf(Direction.class);
 
+    public boolean isEmpty() {
+        return conduitConnections.isEmpty() && traitConnections.isEmpty();
+    }
+
+    public void clear() {
+        conduitConnections.clear();
+        traitConnections.clear();
+    }
+
     public void addConnection(Direction dir) {
         conduitConnections.add(dir);
     }

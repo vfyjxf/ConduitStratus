@@ -4,7 +4,6 @@ import dev.vfyjxf.conduitstratus.client.models.ConduitModel;
 import dev.vfyjxf.conduitstratus.utils.Locations;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ModelEvent;
@@ -17,10 +16,9 @@ public class ConduitStratusClient extends ConduitStratus {
 
     public ConduitStratusClient(IEventBus modEventBus, ModContainer modContainer) {
         super(modEventBus, modContainer);
-        modEventBus.register(this);
+        modEventBus.addListener(this::registerModelLoader);
     }
 
-    @SubscribeEvent
     private void registerModelLoader(ModelEvent.RegisterGeometryLoaders event) {
         event.register(Locations.of("conduit"), new ConduitModel.Loader());
     }
