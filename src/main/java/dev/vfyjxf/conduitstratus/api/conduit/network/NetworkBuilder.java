@@ -7,6 +7,7 @@ import dev.vfyjxf.conduitstratus.conduit.network.ManagedNetworkNode;
 import dev.vfyjxf.conduitstratus.utils.tick.TickDispatcher;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.eclipse.collections.api.factory.Lists;
 
 public final class NetworkBuilder {
 
@@ -32,15 +33,14 @@ public final class NetworkBuilder {
         var first = left.getNetworkUnsafe();
         var second = right.getNetworkUnsafe();
         if (first == null && second == null) {
-            ConduitNetwork network = new ConduitNetwork();
-            network.setCenter(left);
-            network.addNode(left);
-            network.addNode(right);
+            ConduitNetwork network = ConduitNetwork.create();
+            left.setNetwork(network);
+            right.setNetwork(network);
             TickDispatcher.instance().addNetwork(network);
         } else if (first == null) {
-            second.addNode(left);
+            left.setNetwork(second);
         } else if (second == null) {
-            first.addNode(right);
+            right.setNetwork(first);
         } else if (first != second) {
             if (first.size() > second.size()) {
                 moveNodes(second, first);
@@ -51,10 +51,9 @@ public final class NetworkBuilder {
     }
 
     private static void moveNodes(ConduitNetwork source, ConduitNetwork target) {
-        for (NetworkNode node : source.getNodes()) {
-            var conduitNode = (ConduitNetworkNode) node;
-            if (node.getNetwork() != target || node == target.getCenter()) {
-                conduitNode.setNetwork(target);
+        for (ConduitNetworkNode node : Lists.mutable.withAll(source.getNodes())) {
+            if (node.getNetwork() != target) {
+                node.setNetwork(target);
             } else break;
         }
     }

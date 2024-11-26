@@ -11,12 +11,14 @@ import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkServiceType;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
 import dev.vfyjxf.conduitstratus.api.event.EventChannel;
 import dev.vfyjxf.conduitstratus.init.StratusRegistryImpl;
-import org.eclipse.collections.api.factory.Lists;
+import dev.vfyjxf.conduitstratus.utils.tick.TickDispatcher;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.minecraft.core.BlockPos;
+import org.eclipse.collections.api.collection.MutableCollection;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.collection.mutable.CollectionAdapter;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,35 +33,39 @@ public final class ConduitNetwork implements Network {
 
     private final EventChannel<NetworkEvent> eventChannelImpl = EventChannel.create(this);
     private final MutableMap<NetworkServiceType<?>, NetworkService<?>> services = Maps.mutable.empty();
-    private final MutableList<ConduitNetworkNode> nodes = Lists.mutable.empty();
+    private final Long2ObjectOpenHashMap<ConduitNetworkNode> nodes = new Long2ObjectOpenHashMap<>();
     private final MutableMap<HandleType, TypedNetworkChannels<?>> channels = Maps.mutable.withInitialCapacity(NORMAL_CAPACITY);
-    private @Nullable ConduitNetworkNode center;
+
+    private ConduitNetwork() {
+    }
+
+    public static ConduitNetwork create() {
+        ConduitNetwork conduitNetwork = new ConduitNetwork();
+        TickDispatcher.instance().addNetwork(conduitNetwork);
+        return conduitNetwork;
+    }
 
     @ApiStatus.Internal
     public void addNode(ConduitNetworkNode node) {
-        nodes.add(node);
+        nodes.put(node.getPos().asLong(), node);
     }
 
     @ApiStatus.Internal
     public void removeNode(ConduitNetworkNode node) {
-        nodes.remove(node);
+        nodes.remove(node.getPos().asLong());
+        if (nodes.isEmpty()) {
+            TickDispatcher.instance().removeNetwork(this);
+        }
     }
 
     @Override
-    @Nullable
-    public NetworkNode getCenter() {
-        return center;
-    }
-
-    @ApiStatus.Internal
-    public void setCenter(ConduitNetworkNode center) {
-        this.center = center;
-        center.setNetwork(this);
+    public MutableCollection<? extends ConduitNetworkNode> getNodes() {
+        return CollectionAdapter.adapt(nodes.values());
     }
 
     @Override
-    public MutableList<? extends NetworkNode> getNodes() {
-        return nodes.asUnmodifiable();
+    public NetworkNode getNode(BlockPos pos) {
+        return nodes.get(pos.asLong());
     }
 
     @Override

@@ -102,6 +102,7 @@ public class ConduitBlockEntity extends NetworkBlockEntity {
         markForSave();
     }
 
+    //todo:impl reject direction feature
     private void resetConnection() {
         EnumSet<Direction> updated = EnumSet.noneOf(Direction.class);
         for (Direction direction : EnumConstant.directions) {
@@ -126,6 +127,10 @@ public class ConduitBlockEntity extends NetworkBlockEntity {
 
     @Override
     public CompoundTag getUpdateTag(final HolderLookup.Provider provider) {
+        NetworkNode node = getNode();
+        if (node != null) {
+
+        }
         return connections.writeToTag(new CompoundTag());
     }
 
@@ -150,28 +155,18 @@ public class ConduitBlockEntity extends NetworkBlockEntity {
     private void onInitTick() {
         assert level != null;
         this.networkNode.build(level, this);
-        //connect to other conduit
-        for (Direction direction : EnumConstant.directions) {
-            if (rejectDirections.contains(direction)) continue;
-            BlockPos pos = this.getBlockPos().relative(direction);
-            NetworkNode self = this.networkNode.getNode();
-            if (self == null || self.connected(direction) || !self.getTraits(direction).isEmpty()) continue;
-            BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof ConduitBlockEntity conduitBlockEntity) {
-                NetworkNode node = conduitBlockEntity.getNetworkNode().getNode();
-                //todo:check conduit connectable
-                Direction opposite = direction.getOpposite();
-                if (node != null && !node.connected(opposite) && node.getTraits(opposite).isEmpty()) {
-                    NetworkBuilder.createConnection(this.networkNode.getNode(), node, direction);
-                }
-            }
-        }
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        this.connections.clear();
     }
 
     @Override
     public void setRemoved() {
         super.setRemoved();
-        this.networkNode.destroy();
+        this.connections.clear();
     }
 
     @Override

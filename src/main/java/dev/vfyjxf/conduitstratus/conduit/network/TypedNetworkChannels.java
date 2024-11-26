@@ -1,7 +1,7 @@
 package dev.vfyjxf.conduitstratus.conduit.network;
 
-import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.network.ChannelColor;
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkChannels;
@@ -38,7 +38,7 @@ public class TypedNetworkChannels<TRAIT extends Trait> implements NetworkChannel
      */
     private final MutableMap<ChannelColor, MutableMap<TRAIT, MutableList<? extends TRAIT>>> mappedByChannel = MapAdapter.adapt(new EnumMap<>(ChannelColor.class));
 
-    private MutableList<ToAddTrait<TRAIT>> toAddTraits = Lists.mutable.empty();
+    private MutableList<TraitInfo<TRAIT>> traitsToAdd = Lists.mutable.empty();
 
     public TypedNetworkChannels(Network network, HandleType handleType, Predicate<Trait> traitPredicate) {
         this.network = network;
@@ -84,6 +84,7 @@ public class TypedNetworkChannels<TRAIT extends Trait> implements NetworkChannel
 
     @Override
     public MutableList<? extends TRAIT> exporterOf(TRAIT importer, boolean includeImporter) {
+        //todo:implement
         MutableList<TRAIT> exporters = Lists.mutable.empty();
         for (MutableMap<TRAIT, MutableList<? extends TRAIT>> ioMap : mappedByChannel) {
             ioMap.forEachKeyValue((exporter, importers) -> {
@@ -141,10 +142,11 @@ public class TypedNetworkChannels<TRAIT extends Trait> implements NetworkChannel
         //TODO:implement
     }
 
-    private record ToAddTrait<TRAIT extends Trait>(
+    private record TraitInfo<TRAIT extends Trait>(
+            TRAIT trait,
             @Nullable ChannelColor oldChannel, ChannelColor nextChannel,
-            TraitIO oldIO, TraitIO nextIO,
-            TRAIT trait) {
+            TraitIO oldIO, TraitIO nextIO
+    ) {
 
     }
 

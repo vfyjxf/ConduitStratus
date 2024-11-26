@@ -29,7 +29,7 @@ public class ConduitNodeConnection implements NodeConnection {
     }
 
     @Override
-    public NetworkNode getOtherSide(NetworkNode networkNode) {
+    public ConduitNetworkNode getOtherSide(NetworkNode networkNode) {
         return networkNode == left ? right : left;
     }
 
@@ -47,32 +47,32 @@ public class ConduitNodeConnection implements NodeConnection {
     }
 
     @Override
-    public NetworkNode first() {
+    public ConduitNetworkNode first() {
         return left;
     }
 
     @Override
-    public NetworkNode second() {
+    public ConduitNetworkNode second() {
         return right;
     }
 
     @Override
-    public NetworkNode one() {
+    public ConduitNetworkNode one() {
         return left;
     }
 
     @Override
-    public NetworkNode two() {
+    public ConduitNetworkNode two() {
         return right;
     }
 
     @Override
-    public NetworkNode left() {
+    public ConduitNetworkNode left() {
         return left;
     }
 
     @Override
-    public NetworkNode right() {
+    public ConduitNetworkNode right() {
         return right;
     }
 

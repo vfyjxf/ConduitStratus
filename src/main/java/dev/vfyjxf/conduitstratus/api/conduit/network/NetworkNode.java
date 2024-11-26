@@ -33,6 +33,13 @@ public interface NetworkNode {
         return (ServerLevel) getHolder().getLevel();
     }
 
+    /**
+     * if a node is positive, it has connected to a positive node or has a trait.
+     *
+     * @return whether the node is positive
+     */
+    boolean positive();
+
     void addTrait(Direction direction, Trait trait);
 
     boolean hasTrait(TraitType type);
@@ -71,6 +78,12 @@ public interface NetworkNode {
     @Nullable
     NetworkNode getNodeByDirection(Direction direction);
 
+    void addRejectSide(Direction direction);
+
+    void removeRejectSide(Direction direction);
+
+    boolean isRejectedSide(Direction direction);
+
     boolean connected(Direction direction);
 
     boolean connected(NetworkNode node);
@@ -84,6 +97,10 @@ public interface NetworkNode {
             disconnect(value);
         }
     }
+
+    void destroy();
+
+    void visit(NetworkNodeVisitor visitor);
 
     /**
      * @param direction the direction to check

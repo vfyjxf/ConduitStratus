@@ -1,6 +1,7 @@
 package dev.vfyjxf.conduitstratus.utils.tick;
 
 import dev.vfyjxf.conduitstratus.conduit.network.ConduitNetwork;
+import dev.vfyjxf.conduitstratus.conduit.network.ConduitNetworkNode;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -22,6 +23,9 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Map;
 
+/**
+ * The dispatcher for ticking networks and block entities.
+ */
 @ApiStatus.Internal
 public final class TickDispatcher {
 
@@ -33,13 +37,18 @@ public final class TickDispatcher {
 
     private final TickingNetworks tickingNetworks = new TickingNetworks();
     private final InitBlockEntities initBlockEntities = new InitBlockEntities();
-    private long tickCount = 0;
+    private long currentTick = 0;
 
     public long currentTick() {
-        return tickCount;
+        return currentTick;
     }
 
     public void addNetwork(ConduitNetwork network) {
+        tickingNetworks.addNetwork(network);
+    }
+
+    public void removeNetwork(ConduitNetwork network) {
+        tickingNetworks.removeNetwork(network);
     }
 
     public void addInit(BlockEntity blockEntity, Runnable runnable) {
@@ -64,13 +73,15 @@ public final class TickDispatcher {
     }
 
     private void onServerTickPre(ServerTickEvent.Pre event) {
-        for (ConduitNetwork network : tickingNetworks.networks) {
-            network.tick(currentTick());
-        }
+
+
     }
 
     private void onServerTickPost(ServerTickEvent.Post event) {
-        tickCount++;
+        for (ConduitNetwork network : tickingNetworks.networks) {
+            network.tick(currentTick);
+        }
+        currentTick++;
     }
 
     private void onServerLevelTickPre(LevelTickEvent.Pre event) {
@@ -103,9 +114,33 @@ public final class TickDispatcher {
     }
 
     private void onUnloadChunk(ChunkEvent.Unload event) {
+        if (event.getLevel().isClientSide()) return;
+        initBlockEntities.removeChunk(event.getLevel(), event.getChunk().getPos().toLong());
     }
 
     private void onUnloadLevel(LevelEvent.Unload event) {
+        var level = event.getLevel();
+
+        if (level.isClientSide()) {
+            return; // for no there is no reason to care about this on the client...
+        }
+
+        MutableList<ConduitNetworkNode> toDestroy = Lists.mutable.empty();
+
+        this.tickingNetworks.updateNetworks();
+        for (ConduitNetwork network : this.tickingNetworks.networks) {
+            for (var node : network.getNodes()) {
+                if (node.getLevel() == level) {
+                    toDestroy.add(node);
+                }
+            }
+        }
+
+        for (ConduitNetworkNode node : toDestroy) {
+            node.destroy();
+        }
+
+        this.initBlockEntities.removeLevel(level);
     }
 
 
@@ -128,10 +163,12 @@ public final class TickDispatcher {
 
         public void addNetwork(ConduitNetwork network) {
             this.toAdd.add(network);
+            this.toRemove.remove(network);
         }
 
         public void removeNetwork(ConduitNetwork network) {
             this.toRemove.add(network);
+            this.toAdd.remove(network);
         }
 
         public void updateNetworks() {

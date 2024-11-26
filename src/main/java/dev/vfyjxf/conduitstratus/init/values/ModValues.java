@@ -6,10 +6,10 @@ import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
 import dev.vfyjxf.conduitstratus.conduit.ConduitBlockItem;
 import dev.vfyjxf.conduitstratus.conduit.ConduitItem;
-import dev.vfyjxf.conduitstratus.conduit.traits.TraitItem;
 import dev.vfyjxf.conduitstratus.conduit.block.ConduitBlock;
 import dev.vfyjxf.conduitstratus.conduit.blockentity.ConduitBlockEntity;
 import dev.vfyjxf.conduitstratus.conduit.conduits.BasicConduit;
+import dev.vfyjxf.conduitstratus.conduit.traits.TraitItem;
 import dev.vfyjxf.conduitstratus.data.ItemKeys;
 import dev.vfyjxf.conduitstratus.init.StratusRegistryImpl;
 import dev.vfyjxf.conduitstratus.init.TraitTypes;
@@ -47,7 +47,6 @@ public final class ModValues {
         BLOCKS.register(modbus);
         CreativeTabValues.CREATIVE_TAB.register(modbus);
         BLOCK_ENTITIES.register(modbus);
-        ModLoader.postEventWrapContainerInModOrder(new StratusRegisterEvent(StratusRegistryImpl.INSTANCE));
     }
 
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
