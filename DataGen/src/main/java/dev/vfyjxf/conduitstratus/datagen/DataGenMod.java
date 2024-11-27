@@ -1,7 +1,7 @@
 package dev.vfyjxf.conduitstratus.datagen;
 
+import dev.vfyjxf.cloudlib.data.lang.LangKeyProvider;
 import dev.vfyjxf.conduitstratus.Constants;
-import dev.vfyjxf.conduitstratus.api.data.lang.LangKeyProvider;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.data.event.GatherDataEvent;

@@ -1,6 +1,7 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import dev.vfyjxf.cloudlib.api.event.EventHandler;
 import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
 import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
@@ -9,7 +10,6 @@ import dev.vfyjxf.conduitstratus.api.conduit.event.TraitEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.network.ChannelColor;
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
-import dev.vfyjxf.conduitstratus.api.event.EventHandler;
 import dev.vfyjxf.conduitstratus.utils.LevelHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

@@ -1,11 +1,11 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
+import dev.vfyjxf.cloudlib.api.event.EventChannel;
 import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.data.DataKey;
 import dev.vfyjxf.conduitstratus.api.conduit.event.TraitEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.network.ChannelColor;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
-import dev.vfyjxf.conduitstratus.api.event.EventChannel;
 import dev.vfyjxf.conduitstratus.utils.Checks;
 import net.minecraft.core.Direction;
 import org.eclipse.collections.api.factory.Maps;

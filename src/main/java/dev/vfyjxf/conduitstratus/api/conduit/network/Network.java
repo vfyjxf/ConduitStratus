@@ -1,9 +1,9 @@
 package dev.vfyjxf.conduitstratus.api.conduit.network;
 
+import dev.vfyjxf.cloudlib.api.event.EventHandler;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
 import dev.vfyjxf.conduitstratus.api.conduit.event.NetworkEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
-import dev.vfyjxf.conduitstratus.api.event.EventHandler;
 import net.minecraft.core.BlockPos;
 import org.eclipse.collections.api.collection.MutableCollection;
 import org.eclipse.collections.api.list.MutableList;

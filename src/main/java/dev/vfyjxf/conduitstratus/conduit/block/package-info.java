@@ -1,4 +1,4 @@
 @NotNullByDefault
 package dev.vfyjxf.conduitstratus.conduit.block;
 
-import dev.vfyjxf.conduitstratus.api.annotations.NotNullByDefault;
+import dev.vfyjxf.cloudlib.api.annotations.NotNullByDefault;

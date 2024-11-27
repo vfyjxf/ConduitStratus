@@ -1,5 +1,6 @@
 package dev.vfyjxf.conduitstratus.conduit.network;
 
+import dev.vfyjxf.cloudlib.api.event.EventChannel;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
 import dev.vfyjxf.conduitstratus.api.conduit.event.NetworkEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.io.LogisticManager;
@@ -9,7 +10,6 @@ import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkService;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkServiceType;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
-import dev.vfyjxf.conduitstratus.api.event.EventChannel;
 import dev.vfyjxf.conduitstratus.init.StratusRegistryImpl;
 import dev.vfyjxf.conduitstratus.utils.tick.TickDispatcher;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;

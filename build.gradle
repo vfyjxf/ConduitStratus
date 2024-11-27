@@ -48,7 +48,7 @@ repositories {
 base {
     archivesName = mod_name
 }
-
+evaluationDependsOn(":CloudLib")
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 static def isJetBrainsRuntime() {
@@ -107,7 +107,8 @@ neoForge {
 
     mods {
         "${mod_id}" {
-            sourceSet(sourceSets.main)
+            sourceSet sourceSets.main
+            sourceSet project(":CloudLib").sourceSets.main
         }
     }
 }
@@ -119,10 +120,9 @@ configurations {
 
 dependencies {
     localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
-    additionalRuntimeClasspath(implementation("org.eclipse.collections:eclipse-collections-api:11.1.0"))
-    jarJar "org.eclipse.collections:eclipse-collections-api:[11.1.0,)"
-    additionalRuntimeClasspath(implementation("org.eclipse.collections:eclipse-collections:11.1.0"))
-    jarJar "org.eclipse.collections:eclipse-collections:[11.1.0,)"
+    implementation project(":CloudLib")
+    compileOnly("org.eclipse.collections:eclipse-collections-api:11.1.0")
+    compileOnly("org.eclipse.collections:eclipse-collections:11.1.0")
 
 }
 
@@ -138,7 +138,8 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_license            : mod_license,
             mod_version            : mod_version,
             mod_authors            : mod_authors,
-            mod_description        : mod_description
+            mod_description        : mod_description,
+            cloudlib_version       : project(":CloudLib").version
     ]
     inputs.properties replaceProperties
     expand replaceProperties

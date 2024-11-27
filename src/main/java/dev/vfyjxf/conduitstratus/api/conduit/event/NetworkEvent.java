@@ -1,15 +1,14 @@
 package dev.vfyjxf.conduitstratus.api.conduit.event;
 
+import dev.vfyjxf.cloudlib.api.event.EventBase;
+import dev.vfyjxf.cloudlib.api.event.EventDefinition;
+import dev.vfyjxf.cloudlib.api.event.EventFactory;
 import dev.vfyjxf.conduitstratus.api.conduit.data.NetworkData;
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
-import dev.vfyjxf.conduitstratus.api.event.EventBase;
-import dev.vfyjxf.conduitstratus.api.event.EventDefinition;
-import dev.vfyjxf.conduitstratus.api.event.EventFactory;
 
-import static dev.vfyjxf.conduitstratus.api.event.EventContext.Cancelable;
-import static dev.vfyjxf.conduitstratus.api.event.EventContext.Common;
+import static dev.vfyjxf.cloudlib.api.event.EventContext.*;
 
 
 @EventBase
