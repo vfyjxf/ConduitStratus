@@ -108,6 +108,8 @@ neoForge {
     mods {
         "${mod_id}" {
             sourceSet sourceSets.main
+        }
+        "cloudlib" {
             sourceSet project(":CloudLib").sourceSets.main
         }
     }
@@ -121,8 +123,8 @@ configurations {
 dependencies {
     localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
     implementation project(":CloudLib")
-    compileOnly("org.eclipse.collections:eclipse-collections-api:11.1.0")
-    compileOnly("org.eclipse.collections:eclipse-collections:11.1.0")
+    additionalRuntimeClasspath(compileOnly("org.eclipse.collections:eclipse-collections-api:11.1.0"))
+    additionalRuntimeClasspath(compileOnly("org.eclipse.collections:eclipse-collections:11.1.0"))
 
 }
 
