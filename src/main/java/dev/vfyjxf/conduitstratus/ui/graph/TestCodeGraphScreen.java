@@ -1,8 +1,9 @@
 package dev.vfyjxf.conduitstratus.ui.graph;
 
-import dev.vfyjxf.cloudlib.api.ui.event.WidgetEvent;
+import dev.vfyjxf.cloudlib.api.ui.InputContext;
 import dev.vfyjxf.cloudlib.api.ui.widgets.Widget;
 import dev.vfyjxf.cloudlib.api.ui.widgets.WidgetGroup;
+import dev.vfyjxf.cloudlib.helper.RenderHelper;
 import dev.vfyjxf.cloudlib.ui.ModularScreen;
 import dev.vfyjxf.conduitstratus.Constants;
 import net.minecraft.client.Minecraft;
@@ -23,34 +24,45 @@ public class TestCodeGraphScreen extends ModularScreen {
             "cmpl", "cmpg", "cmpl", "cmpg", "cmp", "cmpl"
     );
 
+    private TestCodeGraphScreen() {
+        mainGroup.onRender((graphics, mouseX, mouseY, partialTicks, context) -> {
+            RenderHelper.drawSolidRect(graphics, 0, 0, mainGroup.getWidth(), mainGroup.getHeight(), 0xff282c34);
+        });
+
+        var methodTab = new WidgetGroup<>();
+        {
+            methodTab.onInit((self) -> {
+                methodTab.setId("methodTab");
+                methodTab.setPos(0, 0);
+                methodTab.setSize(mainGroup.getWidth() * 0.15, mainGroup.getHeight());
+            });
+            methodTab.onRender(((graphics, mouseX, mouseY, partialTicks, context) -> {
+                RenderHelper.drawSolidRect(graphics, 0, 0, methodTab.getWidth(), methodTab.getHeight(), 0xff1a1a1a);
+            }));
+            for (int i = 0; i < testLabels.size(); i++) {
+                var labelWidget = Widget.create();
+                var text = testLabels.get(i);
+                labelWidget.onRender((graphics, mouseX, mouseY, partialTicks, context) -> {
+                            int posX = methodTab.getWidth() / 2 - font.width(text) / 2;
+                            graphics.drawString(font, text, posX, 0, 0xffffff);
+                        })
+                        .setPos(0, i * 20)
+                        .setSize(methodTab.getWidth(), 20)
+                        .asChild(methodTab);
+            }
+        }
+        methodTab.asChild(mainGroup);
+
+        var codeGraph = new WidgetGroup<>();
+        codeGraph.asChild(mainGroup);
+    }
+
     @SubscribeEvent
     private static void onInputKey(InputEvent.Key event) {
-        if (openTestScreen.matches(event.getKey(), event.getScanCode())) {
+        InputContext inputContext = InputContext.fromEvent(event);
+        if (inputContext.released(openTestScreen)) {
             Minecraft.getInstance().setScreen(new TestCodeGraphScreen());
         }
     }
 
-    @Override
-    protected void init() {
-        super.init();
-        var methodTab = new WidgetGroup<>();
-        methodTab.setPos(0, 0);
-        methodTab.setSize((int) (width * 0.2), height);
-        for (int i = 0; i < testLabels.size(); i++) {
-            var labelWidget = Widget.create();
-            var text = testLabels.get(i);
-            labelWidget.onEvent(WidgetEvent.onRender, (graphics, mouseX, mouseY, partialTicks, context) -> {
-                graphics.drawString(font, text, 0, 0, 0xffffff);
-            });
-            labelWidget.setPos(0, i * 20);
-            labelWidget.setSize(methodTab.getWidth(), 20);
-            labelWidget.asChild(methodTab);
-        }
-        methodTab.asChild(mainGroup);
-        var codeGraph = new WidgetGroup<>();
-        codeGraph.onEvent(WidgetEvent.onRender, (graphics, mouseX, mouseY, partialTicks, context) -> {
-            graphics.fill(0, 0, codeGraph.getWidth(), codeGraph.getHeight(), 0x282c34);
-        });
-        codeGraph.asChild(mainGroup);
-    }
 }
