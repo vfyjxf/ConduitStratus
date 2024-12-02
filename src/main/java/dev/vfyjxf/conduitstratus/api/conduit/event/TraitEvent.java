@@ -7,7 +7,7 @@ import dev.vfyjxf.conduitstratus.api.conduit.trait.TransferTrait;
 import dev.vfyjxf.conduitstratus.conduit.traits.item.ItemRequest;
 import dev.vfyjxf.conduitstratus.conduit.traits.item.ItemResponse;
 
-import static dev.vfyjxf.cloudlib.api.event.EventContext.*;
+import static dev.vfyjxf.cloudlib.api.event.EventContext.Cancelable;
 
 
 @EventBase

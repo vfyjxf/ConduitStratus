@@ -8,7 +8,8 @@ import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
 
-import static dev.vfyjxf.cloudlib.api.event.EventContext.*;
+import static dev.vfyjxf.cloudlib.api.event.EventContext.Cancelable;
+import static dev.vfyjxf.cloudlib.api.event.EventContext.Common;
 
 
 @EventBase

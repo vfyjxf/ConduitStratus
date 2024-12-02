@@ -1,14 +1,14 @@
 # 内部 graph 需要访问的数据
-    
 
 ## 网络需要的API
+
 - 增删节点的方法(?
 - 检验节点有效性的方法
 - onNodeAdd event
 - onNodeRemove event
 - 计算节点空间距离的快捷方法
 - 合并两个网络的方法(? 类似于两套本身不连在一起的管道网络突然被连在一起的需求)
-  - afterMergeEvent 
+    - afterMergeEvent
 - getNodes()
 - getNodesWithContext(T context, Color color)//获取某种操作类型的某一频道下的节点
 

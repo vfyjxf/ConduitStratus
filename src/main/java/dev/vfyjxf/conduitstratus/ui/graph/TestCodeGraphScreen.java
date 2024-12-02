@@ -1,6 +1,7 @@
 package dev.vfyjxf.conduitstratus.ui.graph;
 
 import dev.vfyjxf.cloudlib.api.ui.InputContext;
+import dev.vfyjxf.cloudlib.api.ui.layout.modifier.Modifier;
 import dev.vfyjxf.cloudlib.api.ui.widgets.Widget;
 import dev.vfyjxf.cloudlib.api.ui.widgets.WidgetGroup;
 import dev.vfyjxf.cloudlib.helper.RenderHelper;
@@ -28,26 +29,27 @@ public class TestCodeGraphScreen extends ModularScreen {
         mainGroup.onRender((graphics, mouseX, mouseY, partialTicks, context) -> {
             RenderHelper.drawSolidRect(graphics, 0, 0, mainGroup.getWidth(), mainGroup.getHeight(), 0xff282c34);
         });
-
         var methodTab = new WidgetGroup<>();
+        methodTab.setId("methodTab");
+        methodTab.withModifier(
+                Modifier.start()
+                        .fillMaxSize(0.15, 1)
+        );
         {
-            methodTab.onInit((self) -> {
-                methodTab.setId("methodTab");
-                methodTab.setPos(0, 0);
-                methodTab.setSize(mainGroup.getWidth() * 0.15, mainGroup.getHeight());
-            });
             methodTab.onRender(((graphics, mouseX, mouseY, partialTicks, context) -> {
                 RenderHelper.drawSolidRect(graphics, 0, 0, methodTab.getWidth(), methodTab.getHeight(), 0xff1a1a1a);
             }));
+            var baseModifier = Modifier.start()
+                    .fillMaxWidth(1);
             for (int i = 0; i < testLabels.size(); i++) {
-                var labelWidget = Widget.create();
+                var labelWidget = Widget.create()
+                        .withModifier(baseModifier.pos(0, i * 20).heightFixed(20));
                 var text = testLabels.get(i);
-                labelWidget.onRender((graphics, mouseX, mouseY, partialTicks, context) -> {
+                labelWidget
+                        .onRender((graphics, mouseX, mouseY, partialTicks, context) -> {
                             int posX = methodTab.getWidth() / 2 - font.width(text) / 2;
                             graphics.drawString(font, text, posX, 0, 0xffffff);
                         })
-                        .setPos(0, i * 20)
-                        .setSize(methodTab.getWidth(), 20)
                         .asChild(methodTab);
             }
         }

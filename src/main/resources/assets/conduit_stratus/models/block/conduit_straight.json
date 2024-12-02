@@ -2,8 +2,8 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [32, 32],
 	"textures": {
-		"particle": "conduit_stratus:block/staright_sides",
-		"staright_sides": "conduit_stratus:block/staright_sides"
+		"particle": "conduit_stratus:block/straight_sides",
+		"straight_sides": "conduit_stratus:block/straight_sides"
 	},
 	"elements": [
 		{

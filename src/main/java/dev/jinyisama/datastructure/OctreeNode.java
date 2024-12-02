@@ -55,9 +55,11 @@ public class OctreeNode {
 
         // 创建子节点并添加到children列表中
         for (int i = 0; i < 8; i++) {
-            BlockPos childPosition = new BlockPos(halfX + ((i & 1) == 1 ? x - halfX : 0),
-                                                  halfY + ((i & 2) == 2 ? y - halfY : 0),
-                                                  halfZ + ((i & 4) == 4 ? z - halfZ : 0));
+            BlockPos childPosition = new BlockPos(
+                    halfX + ((i & 1) == 1 ? x - halfX : 0),
+                    halfY + ((i & 2) == 2 ? y - halfY : 0),
+                    halfZ + ((i & 4) == 4 ? z - halfZ : 0)
+            );
             children.add(new OctreeNode(childPosition));
         }
     }

@@ -35,7 +35,8 @@ public class TraitItem extends Item {
                 var state = level.getBlockState(pos);
                 var ss = state.getSoundType(level, pos, player);
                 level.playSound(null, pos, ss.getPlaceSound(), SoundSource.BLOCKS, (ss.getVolume() + 1.0F) / 2.0F,
-                                ss.getPitch() * 0.8F);
+                                ss.getPitch() * 0.8F
+                );
                 return InteractionResult.sidedSuccess(level.isClientSide());
             }
         }
