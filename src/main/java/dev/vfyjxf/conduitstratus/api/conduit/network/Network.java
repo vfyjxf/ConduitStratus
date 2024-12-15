@@ -6,7 +6,6 @@ import dev.vfyjxf.conduitstratus.api.conduit.event.NetworkEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
 import net.minecraft.core.BlockPos;
 import org.eclipse.collections.api.collection.MutableCollection;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Unmodifiable;

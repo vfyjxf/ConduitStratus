@@ -1,7 +1,6 @@
 package dev.vfyjxf.conduitstratus.init.values;
 
 import dev.vfyjxf.conduitstratus.Constants;
-import dev.vfyjxf.conduitstratus.api.StratusRegisterEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
 import dev.vfyjxf.conduitstratus.conduit.ConduitBlockItem;
@@ -11,7 +10,6 @@ import dev.vfyjxf.conduitstratus.conduit.blockentity.ConduitBlockEntity;
 import dev.vfyjxf.conduitstratus.conduit.conduits.BasicConduit;
 import dev.vfyjxf.conduitstratus.conduit.traits.TraitItem;
 import dev.vfyjxf.conduitstratus.data.ItemKeys;
-import dev.vfyjxf.conduitstratus.init.StratusRegistryImpl;
 import dev.vfyjxf.conduitstratus.init.TraitTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
@@ -21,7 +19,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModLoader;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
