@@ -1,23 +1,14 @@
 package dev.vfyjxf.conduitstratus.ui.graph;
 
-import dev.vfyjxf.cloudlib.api.ui.InputContext;
-import dev.vfyjxf.cloudlib.api.ui.layout.modifier.Modifier;
+import dev.vfyjxf.cloudlib.api.ui.layout.ColumnResizer;
 import dev.vfyjxf.cloudlib.api.ui.widgets.Widget;
 import dev.vfyjxf.cloudlib.api.ui.widgets.WidgetGroup;
 import dev.vfyjxf.cloudlib.helper.RenderHelper;
-import dev.vfyjxf.cloudlib.ui.ModularScreen;
-import dev.vfyjxf.conduitstratus.Constants;
-import net.minecraft.client.Minecraft;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.InputEvent;
+import dev.vfyjxf.cloudlib.ui.BaseScreen;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 
-import static dev.vfyjxf.conduitstratus.ConduitStratus.openTestScreen;
-
-@EventBusSubscriber(modid = Constants.MOD_ID)
-public class TestCodeGraphScreen extends ModularScreen {
+public class TestCodeGraphScreen extends BaseScreen {
 
     private static final MutableList<String> testLabels = Lists.mutable.of(
             "add", "sub", "mul", "div", "mod", "and", "or",
@@ -33,14 +24,16 @@ public class TestCodeGraphScreen extends ModularScreen {
         var methodTab = new WidgetGroup<>();
         methodTab.setId("methodTab");
         methodTab.withModifier(
-                Modifier.start().fillMaxSize(0.15, 1)
+                Modifier().fillMaxSize(0.15, 1)
+                        .layoutWith(ColumnResizer::new, layout -> layout.width(200).height(100))
         );
         methodTab.asChild(mainGroup);
         {
             methodTab.onRender(((graphics, mouseX, mouseY, partialTicks, context) -> {
                 RenderHelper.drawSolidRect(graphics, 0, 0, methodTab.getWidth(), methodTab.getHeight(), 0xff1a1a1a);
             }));
-            var baseModifier = Modifier.start().fillMaxWidth(1);
+
+            var baseModifier = Modifier().fillMaxWidth(1);
             for (int i = 0; i < testLabels.size(); i++) {
                 var labelWidget = Widget.create()
                         .withModifier(baseModifier.pos(0, i * 20).heightFixed(20));
@@ -52,16 +45,14 @@ public class TestCodeGraphScreen extends ModularScreen {
                         .asChild(methodTab);
             }
         }
-        var codeGraph = new WidgetGroup<>();
-        codeGraph.asChild(mainGroup);
-    }
 
-    @SubscribeEvent
-    private static void onInputKey(InputEvent.Key event) {
-        InputContext inputContext = InputContext.fromEvent(event);
-        if (inputContext.released(openTestScreen)) {
-            Minecraft.getInstance().setScreen(new TestCodeGraphScreen());
-        }
+        var codeGraph = new WidgetGroup<>();
+        codeGraph.withModifier(
+                Modifier().posRelX(0.15)
+                        .fillMaxWidth(0.85)
+                        .fillMaxHeight(1)
+        );
+        codeGraph.asChild(mainGroup);
     }
 
 }
