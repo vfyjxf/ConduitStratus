@@ -1,5 +1,6 @@
 package dev.vfyjxf.conduitstratus.api.conduit.network;
 
+import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNode;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitConnection;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
@@ -15,6 +16,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Unmodifiable;
 
 import javax.annotation.Nullable;
+import java.util.EnumSet;
 
 @ApiStatus.NonExtendable
 public interface NetworkNode {
@@ -60,47 +62,47 @@ public interface NetworkNode {
     @Nullable
     <T, C> T poxyCapability(BlockCapability<T, C> capability, @Nullable C context);
 
-    /**
-     * @return the directions define existing connections.
-     */
-    @Unmodifiable
-    RichIterable<Direction> getDirections();
+//    /**
+//     * @return the directions define existing connections.
+//     */
+//    @Unmodifiable
+//    RichIterable<Direction> getDirections();
+//
+//    @Unmodifiable
+//    MutableMap<Direction, ? extends NodeConnection> getConnectionsMap();
+//
+//    @Nullable
+//    NodeConnection getConnection(Direction direction);
+//
+//    @Unmodifiable
+//    RichIterable<? extends NodeConnection> getConnections();
+//
+//    @Nullable
+//    NetworkNode getNodeByDirection(Direction direction);
 
-    @Unmodifiable
-    MutableMap<Direction, ? extends NodeConnection> getConnectionsMap();
-
-    @Nullable
-    NodeConnection getConnection(Direction direction);
-
-    @Unmodifiable
-    RichIterable<? extends NodeConnection> getConnections();
-
-    @Nullable
-    NetworkNode getNodeByDirection(Direction direction);
-
-    void addRejectSide(Direction direction);
-
-    void removeRejectSide(Direction direction);
-
-    boolean isRejectedSide(Direction direction);
-
-    boolean connected(Direction direction);
-
-    boolean connected(NetworkNode node);
-
-    void disconnect(Direction direction);
-
-    void disconnect(NodeConnection connection);
-
-    default void disconnectAll() {
-        for (Direction value : Direction.values()) {
-            disconnect(value);
-        }
-    }
+//    void addRejectSide(Direction direction);
+//
+//    void removeRejectSide(Direction direction);
+//
+//    boolean isRejectedSide(Direction direction);
+//
+//    boolean connected(Direction direction);
+//
+//    boolean connected(NetworkNode node);
+//
+//    void disconnect(Direction direction);
+//
+//    void disconnect(NodeConnection connection);
+//
+//    default void disconnectAll() {
+//        for (Direction value : Direction.values()) {
+//            disconnect(value);
+//        }
+//    }
 
     void destroy();
 
-    void visit(NetworkNodeVisitor visitor);
+//    void visit(NetworkNodeVisitor visitor);
 
     /**
      * @param direction the direction to check
@@ -110,4 +112,7 @@ public interface NetworkNode {
 
     void tick();
 
+    void onNetworkDestroy();
+
+    void resetNetwork();
 }
