@@ -1,6 +1,7 @@
 package dev.vfyjxf.conduitstratus;
 
 import dev.vfyjxf.conduitstratus.api.StratusRegisterEvent;
+import dev.vfyjxf.conduitstratus.api.conduit.connection.ConnectionCalculation;
 import dev.vfyjxf.conduitstratus.config.Config;
 import dev.vfyjxf.conduitstratus.init.StratusRegistryImpl;
 import dev.vfyjxf.conduitstratus.init.values.ModValues;
@@ -19,6 +20,7 @@ public abstract class ConduitStratus {
         Config.register(modContainer);
         ModValues.register(modBus);
         TickDispatcher.instance().init();
+        ConnectionCalculation.getInstance().init();
         modBus.addListener(this::onCommonSetupEvent);
     }
 
