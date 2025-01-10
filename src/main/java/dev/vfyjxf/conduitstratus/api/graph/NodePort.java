@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Unmodifiable;
 
 public class NodePort {
 
-
     private final CodeNode owner;
     private final ResourceLocation identifier;
     private final Class<?> type;
