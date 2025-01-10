@@ -2,6 +2,7 @@ package dev.vfyjxf.conduitstratus.init.values;
 
 import dev.vfyjxf.conduitstratus.Constants;
 import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
+import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNode;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
 import dev.vfyjxf.conduitstratus.conduit.ConduitBlockItem;
 import dev.vfyjxf.conduitstratus.conduit.ConduitItem;
@@ -12,6 +13,7 @@ import dev.vfyjxf.conduitstratus.conduit.traits.TraitItem;
 import dev.vfyjxf.conduitstratus.data.ItemKeys;
 import dev.vfyjxf.conduitstratus.init.TraitTypes;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -51,6 +53,8 @@ public final class ModValues {
     private static final MutableList<ConduitValue<?>> CONDUITS = Lists.mutable.empty();
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
 
+
+
     //////////////////////////
     //        Items          /
     //////////////////////////
@@ -89,6 +93,9 @@ public final class ModValues {
                     .of(ConduitBlockEntity::new, conduitBlock.getBlock().get())
                     .build(null)
     );
+
+
+    public static final BlockCapability<ConduitNode, Void> CONDUIT_NODE_CAP = BlockCapability.createVoid(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "conduit_node"), ConduitNode.class);
 
     @SubscribeEvent
     @SuppressWarnings({"unchecked", "rawtypes"})

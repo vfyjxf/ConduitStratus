@@ -2,20 +2,28 @@ package dev.vfyjxf.conduitstratus.conduit.network;
 
 import dev.vfyjxf.cloudlib.api.event.EventChannel;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
+import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitDistance;
+import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNode;
+import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNodeId;
 import dev.vfyjxf.conduitstratus.api.conduit.event.NetworkEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.io.LogisticManager;
-import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
-import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkChannels;
-import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
-import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkService;
-import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkServiceType;
+import dev.vfyjxf.conduitstratus.api.conduit.network.*;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
+import dev.vfyjxf.conduitstratus.api.event.EventChannel;
+import dev.vfyjxf.conduitstratus.blockentity.NetworkBlockEntity;
+import dev.vfyjxf.conduitstratus.conduit.blockentity.ConduitBlockEntity;
 import dev.vfyjxf.conduitstratus.init.StratusRegistryImpl;
 import dev.vfyjxf.conduitstratus.utils.tick.TickDispatcher;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import org.eclipse.collections.api.collection.ImmutableCollection;
 import org.eclipse.collections.api.collection.MutableCollection;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.collection.mutable.CollectionAdapter;
 import org.jetbrains.annotations.ApiStatus;
@@ -33,28 +41,65 @@ public final class ConduitNetwork implements Network {
 
     private final EventChannel<NetworkEvent> eventChannelImpl = EventChannel.create(this);
     private final MutableMap<NetworkServiceType<?>, NetworkService<?>> services = Maps.mutable.empty();
-    private final Long2ObjectOpenHashMap<ConduitNetworkNode> nodes = new Long2ObjectOpenHashMap<>();
     private final MutableMap<HandleType, TypedNetworkChannels<?>> channels = Maps.mutable.withInitialCapacity(NORMAL_CAPACITY);
 
-    private ConduitNetwork() {
+    private final MutableMap<ConduitNodeId, ConduitNetworkNode> nodes;
+
+    private final ConduitDistance distance;
+    private final ImmutableList<ConduitNodeId> nodeIds;
+    private boolean initialized = false;
+
+    @Override
+    public ConduitDistance getDistance() {
+        return distance;
     }
 
-    public static ConduitNetwork create() {
-        ConduitNetwork conduitNetwork = new ConduitNetwork();
+    private ConduitNetwork(ConduitDistance distance, ImmutableList<ConduitNodeId> nodeIds) {
+        this.distance = distance;
+        this.nodeIds = nodeIds;
+        this.nodes = Maps.mutable.withInitialCapacity(nodeIds.size());
+    }
+
+
+    public static ConduitNetwork create(ImmutableList<ConduitNodeId> nodeIds, ConduitDistance distance) {
+        ConduitNetwork conduitNetwork = new ConduitNetwork(distance, nodeIds);
         TickDispatcher.instance().addNetwork(conduitNetwork);
         return conduitNetwork;
     }
 
-    @ApiStatus.Internal
-    public void addNode(ConduitNetworkNode node) {
-        nodes.put(node.getPos().asLong(), node);
-    }
+    private void init(MinecraftServer server) {
+        if (initialized) {
+            return;
+        }
+        initialized = true;
 
-    @ApiStatus.Internal
-    public void removeNode(ConduitNetworkNode node) {
-        nodes.remove(node.getPos().asLong());
-        if (nodes.isEmpty()) {
-            TickDispatcher.instance().removeNetwork(this);
+        for (ConduitNodeId nodeId : nodeIds) {
+            Level level = server.getLevel(nodeId.dimension());
+            if (level == null) {
+                logger.error("Level not found: {}", nodeId.dimension());
+                // TODO: handle invalid nodes
+                continue;
+            }
+
+            BlockPos pos = nodeId.pos();
+
+            BlockEntity blockEntity =level.getBlockEntity(pos);
+
+            if (!(blockEntity instanceof NetworkBlockEntity networkBlockEntity)) {
+                logger.error("NetworkBlockEntity not found: {}", pos);
+                continue;
+            }
+
+            var node = (ConduitNetworkNode) networkBlockEntity.getNode();
+
+            if(node == null) {
+                logger.error("NetworkNode not found: {}", pos);
+                continue;
+            }
+
+            node.setNetwork(this);
+            nodes.put(nodeId, node);
+
         }
     }
 
@@ -64,18 +109,26 @@ public final class ConduitNetwork implements Network {
     }
 
     @Override
-    public NetworkNode getNode(BlockPos pos) {
-        return nodes.get(pos.asLong());
+    public ImmutableList<ConduitNodeId> getNodeIds() {
+        return nodeIds;
+    }
+
+    @Override
+    public NetworkNode getNode(ResourceKey<Level> dimension, BlockPos pos) {
+        if(!initialized) {
+            throw new IllegalStateException("Network not initialized");
+        }
+        return nodes.get(new ConduitNodeId(dimension, pos));
     }
 
     @Override
     public int size() {
-        return nodes.size();
+        return nodeIds.size();
     }
 
     @Override
     public boolean isEmpty() {
-        return nodes.isEmpty();
+        return nodeIds.isEmpty();
     }
 
     @Override
@@ -133,8 +186,20 @@ public final class ConduitNetwork implements Network {
     }
 
     @Override
-    public void tick(long currentTick) {
+    public void tick(MinecraftServer server, long currentTick) {
+        init(server);
+    }
 
+    @Override
+    public void destory() {
+        for (ConduitNetworkNode node : nodes.values()) {
+            node.onNetworkDestroy();
+        }
+        nodes.clear();
+        services.clear();
+        channels.clear();
+
+        TickDispatcher.instance().removeNetwork(this);
     }
 
     @Override

@@ -79,7 +79,7 @@ public final class TickDispatcher {
 
     private void onServerTickPost(ServerTickEvent.Post event) {
         for (ConduitNetwork network : tickingNetworks.networks) {
-            network.tick(currentTick);
+            network.tick(event.getServer(), currentTick);
         }
         currentTick++;
     }
