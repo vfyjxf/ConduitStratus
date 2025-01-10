@@ -2,11 +2,13 @@ package dev.vfyjxf.conduitstratus.utils;
 
 import dev.vfyjxf.conduitstratus.Constants;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Rename {@link ResourceLocation}'s factory methods.
  */
+@ApiStatus.Internal
 public final class Locations {
 
     public static ResourceLocation parse(String location) {

@@ -9,7 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-public class FluidFilterPlugin implements FilterPlugin<TransferTrait<ItemRequest, ItemResponse>, ItemStack,Void> {
+public class FluidFilterPlugin implements FilterPlugin<TransferTrait<ItemRequest, ItemResponse>, ItemStack, Void> {
     @Override
     public boolean apply(TransferTrait<ItemRequest, ItemResponse> trait, ItemStack stack, @Nullable Void unused) {
         return false;

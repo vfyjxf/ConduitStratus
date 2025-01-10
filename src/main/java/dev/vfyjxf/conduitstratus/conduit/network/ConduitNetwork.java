@@ -1,5 +1,6 @@
 package dev.vfyjxf.conduitstratus.conduit.network;
 
+import dev.vfyjxf.cloudlib.api.event.EventChannel;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
 import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitDistance;
 import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNode;

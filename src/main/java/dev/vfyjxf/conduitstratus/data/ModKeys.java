@@ -1,7 +1,7 @@
 package dev.vfyjxf.conduitstratus.data;
 
+import dev.vfyjxf.cloudlib.data.lang.LangBuilder;
 import dev.vfyjxf.conduitstratus.Constants;
-import dev.vfyjxf.conduitstratus.api.data.lang.LangBuilder;
 
 public final class ModKeys {
 
