@@ -30,7 +30,7 @@ public class TraitItem extends Item {
         var traitType = itemStack.getItem() instanceof TraitItem traitItem ? traitItem.type : null;
         if (traitType == null) return InteractionResult.PASS;
         if (level.getBlockEntity(pos) instanceof ConduitBlockEntity blockEntity) {
-            if (!blockEntity.getConnections().hasConnection(side)) {
+            if (!blockEntity.getConnectionState().hasConnection(side)) {
                 blockEntity.addTrait(traitType, side);
                 var state = level.getBlockState(pos);
                 var ss = state.getSoundType(level, pos, player);

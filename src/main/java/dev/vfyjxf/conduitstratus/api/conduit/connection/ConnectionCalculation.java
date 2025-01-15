@@ -10,7 +10,11 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ConnectionCalculation {
@@ -18,6 +22,7 @@ public class ConnectionCalculation {
     private record ConnectingNode(ConduitNodeId id, NodeBFSIterator bfs, IncompleteNetwork network) {
     }
 
+    private boolean chainLoading = false;
 
     // 正在进行的计算
     private final ReentrantLock computeLock = new ReentrantLock();
@@ -178,11 +183,11 @@ public class ConnectionCalculation {
             var entry = it.next();
             var node = entry.getValue();
 
-            if(node.initializing()) {
+            if (node.initializing()) {
                 continue;
             }
 
-            if(!node.valid()) {
+            if (!node.valid()) {
                 it.remove();
                 continue;
             }
@@ -202,7 +207,7 @@ public class ConnectionCalculation {
         ConduitNodeId nodeId = takeIdleNode();
 
         // TODO: 多个网络同时计算
-        if(nodeId == null) {
+        if (nodeId == null) {
             return;
         }
 
@@ -225,15 +230,15 @@ public class ConnectionCalculation {
             for (NodeBFSIterator.IterNode iterNode : bfs.getNodes()) {
                 if (iterNode.invalid) {
                     invalidNodes.add(iterNode.nodeId);
-                    if(iterNode.fromId != null) {
+                    if (iterNode.fromId != null) {
                         invalidNodes.add(iterNode.fromId);
                     }
                 }
             }
 
-            for(ConduitNodeId invalidNode : invalidNodes) {
+            for (ConduitNodeId invalidNode : invalidNodes) {
                 ConduitNode node = searchNode(invalidNode);
-                if(node != null) {
+                if (node != null) {
                     node.setValid(false);
                 }
             }

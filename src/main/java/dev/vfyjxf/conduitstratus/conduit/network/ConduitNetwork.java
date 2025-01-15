@@ -3,30 +3,28 @@ package dev.vfyjxf.conduitstratus.conduit.network;
 import dev.vfyjxf.cloudlib.api.event.EventChannel;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
 import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitDistance;
-import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNode;
 import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNodeId;
 import dev.vfyjxf.conduitstratus.api.conduit.event.NetworkEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.io.LogisticManager;
-import dev.vfyjxf.conduitstratus.api.conduit.network.*;
+import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
+import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkChannels;
+import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
+import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkService;
+import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkServiceType;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
-import dev.vfyjxf.conduitstratus.api.event.EventChannel;
 import dev.vfyjxf.conduitstratus.blockentity.NetworkBlockEntity;
-import dev.vfyjxf.conduitstratus.conduit.blockentity.ConduitBlockEntity;
 import dev.vfyjxf.conduitstratus.init.StratusRegistryImpl;
 import dev.vfyjxf.conduitstratus.utils.tick.TickDispatcher;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import org.eclipse.collections.api.collection.ImmutableCollection;
 import org.eclipse.collections.api.collection.MutableCollection;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.collection.mutable.CollectionAdapter;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +81,7 @@ public final class ConduitNetwork implements Network {
 
             BlockPos pos = nodeId.pos();
 
-            BlockEntity blockEntity =level.getBlockEntity(pos);
+            BlockEntity blockEntity = level.getBlockEntity(pos);
 
             if (!(blockEntity instanceof NetworkBlockEntity networkBlockEntity)) {
                 logger.error("NetworkBlockEntity not found: {}", pos);
@@ -92,7 +90,7 @@ public final class ConduitNetwork implements Network {
 
             var node = (ConduitNetworkNode) networkBlockEntity.getNode();
 
-            if(node == null) {
+            if (node == null) {
                 logger.error("NetworkNode not found: {}", pos);
                 continue;
             }
@@ -115,7 +113,7 @@ public final class ConduitNetwork implements Network {
 
     @Override
     public NetworkNode getNode(ResourceKey<Level> dimension, BlockPos pos) {
-        if(!initialized) {
+        if (!initialized) {
             throw new IllegalStateException("Network not initialized");
         }
         return nodes.get(new ConduitNodeId(dimension, pos));
@@ -191,7 +189,7 @@ public final class ConduitNetwork implements Network {
     }
 
     @Override
-    public void destory() {
+    public void destroy() {
         for (ConduitNetworkNode node : nodes.values()) {
             node.onNetworkDestroy();
         }

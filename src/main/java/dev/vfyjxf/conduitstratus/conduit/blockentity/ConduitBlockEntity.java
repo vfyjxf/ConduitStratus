@@ -10,7 +10,7 @@ import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
 import dev.vfyjxf.conduitstratus.blockentity.NetworkBlockEntity;
 import dev.vfyjxf.conduitstratus.client.models.ModelProperties;
-import dev.vfyjxf.conduitstratus.conduit.ConduitConnections;
+import dev.vfyjxf.conduitstratus.conduit.ConnectionState;
 import dev.vfyjxf.conduitstratus.conduit.block.ConduitShapes;
 import dev.vfyjxf.conduitstratus.conduit.network.NetworkHolder;
 import dev.vfyjxf.conduitstratus.init.values.ModValues;
@@ -36,6 +36,7 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,12 +44,13 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 
+
 public class ConduitBlockEntity extends NetworkBlockEntity implements ConduitNode {
 
     private static final Logger logger = LoggerFactory.getLogger("ConduitStratus-ConduitBlockEntity");
     private Conduit conduit;
     private final EnumSet<Direction> rejectDirections = EnumSet.noneOf(Direction.class);
-    private final ConduitConnections connections = new ConduitConnections();
+    private final ConnectionState connectionState = new ConnectionState();
 
     private ConduitNodeId nodeId;
     private boolean invalid = false;
@@ -95,16 +97,15 @@ public class ConduitBlockEntity extends NetworkBlockEntity implements ConduitNod
     }
 
     public VoxelShape getShape() {
-        return ConduitShapes.getShape(connections);
+        return ConduitShapes.getShape(connectionState);
     }
 
     @Override
     public ModelData getModelData() {
         return ModelData.builder()
-                .with(ModelProperties.CONDUIT_CONNECTION, connections)
+                .with(ModelProperties.CONDUIT_CONNECTION, connectionState)
                 .build();
     }
-
 
     @ApiStatus.Internal
     public void updateConnections() {
@@ -112,8 +113,8 @@ public class ConduitBlockEntity extends NetworkBlockEntity implements ConduitNod
         setChanged();
     }
 
-    public ConduitConnections getConnections() {
-        return connections;
+    public ConnectionState getConnectionState() {
+        return connectionState;
     }
 
     public void addTrait(TraitType type, Direction side) {
@@ -121,7 +122,7 @@ public class ConduitBlockEntity extends NetworkBlockEntity implements ConduitNod
         if (node != null) {
             node.addTrait(side, type.getFactory().create(type, node, side));
         }
-        connections.addTrait(side);
+        connectionState.addTrait(side);
         markForUpdate();
         markForSave();
     }
@@ -129,20 +130,25 @@ public class ConduitBlockEntity extends NetworkBlockEntity implements ConduitNod
     //todo:impl reject direction feature
     private void resetConnection() {
         EnumSet<Direction> updated = EnumSet.noneOf(Direction.class);
+        EnumSet<Direction> old = connectionState.connectionSides();
         for (Direction direction : EnumConstant.directions) {
-            if (rejectDirections.contains(direction) || connections.hasTrait(direction)) continue;
+            if (rejectDirections.contains(direction) || connectionState.hasTrait(direction)) continue;
             BlockPos pos = this.getBlockPos().relative(direction);
             BlockEntity blockEntity = level.getBlockEntity(pos);
+            //todo:使用cap而不是强制要求为ConduitBlockEntity
             if (blockEntity instanceof ConduitBlockEntity conduitBlockEntity) {
                 Direction opposite = direction.getOpposite();
-                if (conduitBlockEntity.isDirectionRejected(opposite) || conduitBlockEntity.connections.hasTrait(opposite)) {
+                if (conduitBlockEntity.isDirectionRejected(opposite) || conduitBlockEntity.connectionState.hasTrait(opposite)) {
                     continue;
                 }
                 updated.add(direction);
             }
 
         }
-        connections.setConnections(updated);
+        connectionState.setConnections(updated);
+        if (!updated.equals(old)) {
+            //fixme:暂停下一刻的路径精算
+        }
 
         refreshConnection();
     }
@@ -158,46 +164,49 @@ public class ConduitBlockEntity extends NetworkBlockEntity implements ConduitNod
         if (node != null) {
 
         }
-        return connections.writeToTag(new CompoundTag());
-    }
-
-    @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-        super.loadAdditional(tag, registries);
-        networkNode.loadData(tag);
-        connections.fromTag(tag);
-        if (level != null) {
-            requestModelDataUpdate();
-            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
-        }
+        return connectionState.writeToTag(new CompoundTag());
     }
 
     @Override
     protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.saveAdditional(tag, registries);
         networkNode.saveData(tag);
-        connections.writeToTag(tag);
+        connectionState.writeToTag(tag);
+        tag.putIntArray("rejectDirections", rejectDirections.stream().mapToInt(Direction::get3DDataValue).toArray());
     }
 
-    private void onInitTick() {
-        assert level != null;
-        this.updateConnections();
-        this.networkNode.build(level, this);
-        ConnectionCalculation.getInstance().addIdleNode(this);
+    @Override
+    protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+        super.loadAdditional(tag, registries);
+        networkNode.loadData(tag);
+        connectionState.fromTag(tag);
+        int[] rejectDirections = tag.getIntArray("rejectDirections");
+        for (int i : rejectDirections) {
+            this.rejectDirections.add(Direction.from3DDataValue(i));
+        }
+        if (level != null) {
+            requestModelDataUpdate();
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
+        }
+    }
+
+    @Nullable
+    private ConduitNode loadRemoteNode(ConduitNodeId id) {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override
     public void onChunkUnloaded() {
         super.onChunkUnloaded();
-        this.connections.clear();
+        this.connectionState.clear();
     }
 
     @Override
     public void setRemoved() {
         super.setRemoved();
-        this.connections.clear();
-        if(this.networkNode.available()){
-            this.networkNode.getNetwork().destory();
+        this.connectionState.clear();
+        if (this.networkNode.available()) {
+            this.networkNode.getNetwork().destroy();
         }
     }
 
@@ -206,6 +215,14 @@ public class ConduitBlockEntity extends NetworkBlockEntity implements ConduitNod
         super.clearRemoved();
         NetworkBuilder.onInitTick(this, this::onInitTick);
     }
+
+    private void onInitTick() {
+        assert level != null;
+        updateConnections();
+        this.networkNode.build(level, this);
+        ConnectionCalculation.getInstance().addIdleNode(this);
+    }
+
     // conduit nodes
 
     @Override
@@ -254,7 +271,7 @@ public class ConduitBlockEntity extends NetworkBlockEntity implements ConduitNod
         HashSet<ConduitNodeId> prevConnections = new HashSet<>();
         Iterate.addAllTo(this.conduitConnections.keysView(), prevConnections);
         this.conduitConnections.clear();
-        for (Direction direction : this.connections.connectionSides()) {
+        for (Direction direction : this.connectionState.connectionSides()) {
             Level level = getLevel();
             BlockPos pos = this.getBlockPos().relative(direction);
             ConduitNode node = level.getCapability(ModValues.CONDUIT_NODE_CAP, pos);

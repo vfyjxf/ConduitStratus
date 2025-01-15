@@ -37,6 +37,7 @@ public final class TickDispatcher {
 
     private final TickingNetworks tickingNetworks = new TickingNetworks();
     private final InitBlockEntities initBlockEntities = new InitBlockEntities();
+    private final TickTasks tickTasks = new TickTasks();
     private long currentTick = 0;
 
     public long currentTick() {
@@ -56,6 +57,10 @@ public final class TickDispatcher {
         if (!blockEntity.getLevel().isClientSide()) {
             initBlockEntities.addInit(blockEntity, runnable);
         }
+    }
+
+    public void addTaskToNextTick(Runnable task) {
+        tickTasks.toAdd.add(task);
     }
 
     public void init() {
@@ -214,6 +219,19 @@ public final class TickDispatcher {
 
         Long2ObjectMap<MutableList<Pair<BlockEntity, Runnable>>> getInitEntities(LevelAccessor level) {
             return initQueue.get(level);
+        }
+    }
+
+    private static class TickTasks {
+        private final MutableList<Runnable> tasks = Lists.mutable.empty();
+        private final MutableList<Runnable> toAdd = Lists.mutable.empty();
+
+        public void update() {
+            if (!toAdd.isEmpty()) {
+                tasks.clear();
+                tasks.addAll(toAdd);
+                toAdd.clear();
+            }
         }
     }
 

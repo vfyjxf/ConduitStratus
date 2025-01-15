@@ -4,7 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.mojang.math.Transformation;
-import dev.vfyjxf.conduitstratus.conduit.ConduitConnections;
+import dev.vfyjxf.conduitstratus.conduit.ConnectionState;
 import dev.vfyjxf.conduitstratus.utils.BiDirection;
 import dev.vfyjxf.conduitstratus.utils.EnumConstant;
 import dev.vfyjxf.conduitstratus.utils.Locations;
@@ -42,7 +42,7 @@ public class ConduitBakedModel implements IDynamicBakedModel {
     private static final ResourceLocation STRAIGHT = Locations.of("block/conduit_straight");
     private static final ResourceLocation TRAIT_INTERFACE = Locations.of("block/trait_interface");
 
-    private final LoadingCache<ConduitConnections, MutableList<BakedQuad>> modelCache;
+    private final LoadingCache<ConnectionState, MutableList<BakedQuad>> modelCache;
     private final ModelBaker baker;
     private final Function<Material, TextureAtlasSprite> spriteGetter;
     private final TextureAtlasSprite particleSprite;
@@ -76,12 +76,12 @@ public class ConduitBakedModel implements IDynamicBakedModel {
             ModelData extraData,
             @Nullable RenderType renderType
     ) {
-        ConduitConnections connections = extraData.get(ModelProperties.CONDUIT_CONNECTION);
+        ConnectionState connections = extraData.get(ModelProperties.CONDUIT_CONNECTION);
         if (connections == null || side != null) return Collections.emptyList();
         return modelCache.getUnchecked(connections);
     }
 
-    private MutableList<BakedQuad> getQuads(ConduitConnections connections) {
+    private MutableList<BakedQuad> getQuads(ConnectionState connections) {
         final RandomSource rand = RandomSource.create();
         MutableList<BakedQuad> quads = Lists.mutable.empty();
         if (connections.isStraight()) {

@@ -1,7 +1,14 @@
 package dev.vfyjxf.conduitstratus.api.conduit.connection;
 
-import java.util.*;
+import org.jetbrains.annotations.ApiStatus;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+
+@ApiStatus.Internal
 public class NodeBFSIterator {
 
     public static class IterNode {

@@ -5,7 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 
 import java.util.EnumSet;
 
-public class ConduitConnections {
+public class ConnectionState {
 
     private final EnumSet<Direction> conduitConnections = EnumSet.noneOf(Direction.class);
     private final EnumSet<Direction> traitConnections = EnumSet.noneOf(Direction.class);
@@ -100,7 +100,7 @@ public class ConduitConnections {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ConduitConnections that = (ConduitConnections) o;
+        ConnectionState that = (ConnectionState) o;
         return conduitConnections.equals(that.conduitConnections)
                 && traitConnections.equals(that.traitConnections);
     }

@@ -182,7 +182,7 @@ public class ConduitNetworkNode implements NetworkNode, NetworkHolder {
     @Override
     public void resetNetwork() {
         if(network != null) {
-            this.network.destory();
+            this.network.destroy();
         }
     }
 

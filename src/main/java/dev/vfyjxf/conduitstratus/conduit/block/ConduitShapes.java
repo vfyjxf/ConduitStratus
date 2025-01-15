@@ -3,7 +3,7 @@ package dev.vfyjxf.conduitstratus.conduit.block;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import dev.vfyjxf.conduitstratus.conduit.ConduitConnections;
+import dev.vfyjxf.conduitstratus.conduit.ConnectionState;
 import dev.vfyjxf.conduitstratus.utils.ShapeHelper;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.shapes.BooleanOp;
@@ -89,11 +89,11 @@ public final class ConduitShapes {
         }
     };
 
-    private static final LoadingCache<ConduitConnections, VoxelShape> CACHE = CacheBuilder.newBuilder()
+    private static final LoadingCache<ConnectionState, VoxelShape> CACHE = CacheBuilder.newBuilder()
             .maximumSize(10000)
             .build(new CacheLoader<>() {
                 @Override
-                public VoxelShape load(ConduitConnections key) {
+                public VoxelShape load(ConnectionState key) {
                     if (key.isStraight() && key.traitSides().isEmpty()) {
                         Direction direction = key.getStraightDirection();
                         return ShapeHelper.rotate(STRAIGHT, direction);
@@ -110,7 +110,7 @@ public final class ConduitShapes {
                 }
             });
 
-    public static VoxelShape getShape(ConduitConnections connections) {
+    public static VoxelShape getShape(ConnectionState connections) {
         return CACHE.getUnchecked(connections);
     }
 

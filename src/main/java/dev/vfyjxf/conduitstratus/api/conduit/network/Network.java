@@ -7,14 +7,11 @@ import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNodeId;
 import dev.vfyjxf.conduitstratus.api.conduit.event.NetworkEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
-import org.eclipse.collections.api.collection.ImmutableCollection;
 import org.eclipse.collections.api.collection.MutableCollection;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Unmodifiable;
@@ -59,7 +56,7 @@ public interface Network extends EventHandler<NetworkEvent> {
 
     void tick(MinecraftServer server, long currentTick);
 
-    void destory();
+    void destroy();
 
     ConduitDistance getDistance();
 }
