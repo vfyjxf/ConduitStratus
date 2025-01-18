@@ -2,28 +2,65 @@ package dev.vfyjxf.conduitstratus.api.conduit.connection;
 
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkBuilder;
-import dev.vfyjxf.conduitstratus.conduit.network.ConduitNetwork;
 import it.unimi.dsi.fastutil.objects.Object2ShortMap;
 import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.multimap.MutableMultimap;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.factory.Multimaps;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class IncompleteNetwork {
     private final AtomicInteger buildIndex = new AtomicInteger(1);
-    private final Map<ConduitNodeId, CachedNode> nodes = new HashMap<>();
+    private final MutableMap<ConduitNodeId, CachedNode> nodes = Maps.mutable.empty();
+    private final UUID id = UUID.randomUUID();
+    private final MutableMultimap<ResourceKey<Level>, ChunkPos> chunks = Multimaps.mutable.set.empty();
+
+    private final AtomicBoolean cancelled = new AtomicBoolean(false);
 
     private ImmutableList<ConduitNodeId> nodeById;
     private short[] distances;
     private boolean prepared = false;
 
     public IncompleteNetwork() {
+    }
 
+
+
+    public boolean isCancelled() {
+        return cancelled.get();
+    }
+
+    public void cancel() {
+        cancelled.set(true);
+    }
+
+    public UUID id() {
+        return id;
+    }
+
+    public void addChunk(ResourceKey<Level> dim, ChunkPos pos) {
+        chunks.put(dim, pos);
+    }
+
+    public boolean hasChunk(ResourceKey<Level> dim, ChunkPos pos) {
+        return chunks.get(dim).contains(pos);
+    }
+
+    public RichIterable<Pair<ResourceKey<Level>, RichIterable<ChunkPos>>> getChunks() {
+        return chunks.keyMultiValuePairsView();
     }
 
     public CachedNode getNode(ConduitNodeId id) {
@@ -71,6 +108,9 @@ public class IncompleteNetwork {
 
     @Nullable
     public ConduitNodeId nextToBuild() {
+        if (cancelled.get()) {
+            return null;
+        }
         if (buildIndex.get() >= nodeById.size() - 1) {
             return null;
         }
@@ -83,7 +123,10 @@ public class IncompleteNetwork {
 
 
     public Network build() {
-        if(!finished()) {
+        if (cancelled.get()) {
+            return null;
+        }
+        if (!finished()) {
             throw new IllegalStateException("Network is not finished");
         }
 
