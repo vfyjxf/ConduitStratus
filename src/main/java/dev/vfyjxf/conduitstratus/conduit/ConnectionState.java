@@ -78,18 +78,22 @@ public class ConnectionState {
         return conduitConnections.iterator().next();
     }
 
-    public CompoundTag writeToTag(CompoundTag tag) {
-        tag.putIntArray("conduitConnections", conduitConnections.stream().mapToInt(Direction::get3DDataValue).toArray());
+    public CompoundTag writeToTag(CompoundTag tag, boolean saveConduitConnections) {
+        if (saveConduitConnections) {
+            tag.putIntArray("conduitConnections", conduitConnections.stream().mapToInt(Direction::get3DDataValue).toArray());
+        }
         tag.putIntArray("traitConnections", traitConnections.stream().mapToInt(Direction::get3DDataValue).toArray());
         return tag;
     }
 
     public void fromTag(CompoundTag tag) {
-        conduitConnections.clear();
-        traitConnections.clear();
-        for (int i : tag.getIntArray("conduitConnections")) {
-            conduitConnections.add(Direction.from3DDataValue(i));
+        if (tag.contains("conduitConnections")) {
+            conduitConnections.clear();
+            for (int i : tag.getIntArray("conduitConnections")) {
+                conduitConnections.add(Direction.from3DDataValue(i));
+            }
         }
+        traitConnections.clear();
         for (int i : tag.getIntArray("traitConnections")) {
             traitConnections.add(Direction.from3DDataValue(i));
         }

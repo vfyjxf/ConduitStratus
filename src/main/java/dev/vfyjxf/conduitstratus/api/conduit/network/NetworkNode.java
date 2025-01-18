@@ -62,43 +62,6 @@ public interface NetworkNode {
     @Nullable
     <T, C> T poxyCapability(BlockCapability<T, C> capability, @Nullable C context);
 
-//    /**
-//     * @return the directions define existing connections.
-//     */
-//    @Unmodifiable
-//    RichIterable<Direction> getDirections();
-//
-//    @Unmodifiable
-//    MutableMap<Direction, ? extends NodeConnection> getConnectionsMap();
-//
-//    @Nullable
-//    NodeConnection getConnection(Direction direction);
-//
-//    @Unmodifiable
-//    RichIterable<? extends NodeConnection> getConnections();
-//
-//    @Nullable
-//    NetworkNode getNodeByDirection(Direction direction);
-
-//    void addRejectSide(Direction direction);
-//
-//    void removeRejectSide(Direction direction);
-//
-//    boolean isRejectedSide(Direction direction);
-//
-//    boolean connected(Direction direction);
-//
-//    boolean connected(NetworkNode node);
-//
-//    void disconnect(Direction direction);
-//
-//    void disconnect(NodeConnection connection);
-//
-//    default void disconnectAll() {
-//        for (Direction value : Direction.values()) {
-//            disconnect(value);
-//        }
-//    }
 
     void destroy();
 

@@ -22,8 +22,6 @@ public class ConnectionCalculation {
     private record ConnectingNode(ConduitNodeId id, NodeBFSIterator bfs, IncompleteNetwork network) {
     }
 
-    private boolean chainLoading = false;
-
     // 正在进行的计算
     private final ReentrantLock computeLock = new ReentrantLock();
     private final ArrayDeque<IncompleteNetwork> pendingNetworks = new ArrayDeque<>();
@@ -143,7 +141,7 @@ public class ConnectionCalculation {
         if (node == null || !node.valid()) {
             return null;
         }
-        List<ConduitNodeId> neighbors = node.neighbors();
+        List<ConduitNodeId> neighbors = node.adjacentNodes();
 
         network.addNode(new CachedNode(nodeId, neighbors));
         return neighbors;

@@ -143,37 +143,6 @@ public class ConduitNetworkNode implements NetworkNode, NetworkHolder {
     }
 
 
-//    @Override
-//    public @Unmodifiable RichIterable<Direction> getDirections() {
-//        return connections.keysView();
-//    }
-
-//    @Override
-//    public MutableMap<Direction, ? extends NodeConnection> getConnectionsMap() {
-//        return connections.asUnmodifiable();
-//    }
-//
-//    @Nullable
-//    @Override
-//    public NodeConnection getConnection(Direction direction) {
-//        return connections.get(direction);
-//    }
-
-//    @Override
-//    public @Unmodifiable RichIterable<? extends NodeConnection> getConnections() {
-//        return connections.valuesView();
-//    }
-//
-//    @Nullable
-//    @Override
-//    public NetworkNode getNodeByDirection(Direction direction) {
-//        NodeConnection connection = connections.get(direction);
-//        if (connection == null) return null;
-//
-//        return connection.getOtherSide(this);
-//    }
-
-
     @Override
     public void onNetworkDestroy() {
         this.network = null;

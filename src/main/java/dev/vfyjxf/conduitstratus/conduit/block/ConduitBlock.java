@@ -63,16 +63,8 @@ public class ConduitBlock extends Block implements EntityBlock, SimpleWaterlogge
             BlockPos pos,
             BlockPos neighborPos
     ) {
-        BlockEntity blockEntity = level.getBlockEntity(pos);
         if (level.getBlockEntity(pos) instanceof ConduitBlockEntity conduitBlockEntity) {
-            conduitBlockEntity.updateConnections();
-            if (level instanceof ServerLevel serverLevel) {
-                var state = level.getBlockState(pos);
-                serverLevel.sendBlockUpdated(pos, state, state, Block.UPDATE_ALL);
-            }
-        }
-        if (level.isClientSide() && blockEntity != null) {
-            blockEntity.requestModelDataUpdate();
+            conduitBlockEntity.refreshNeighbor();
         }
         return super.updateShape(oldState, direction, neighborState, level, pos, neighborPos);
     }
@@ -80,12 +72,23 @@ public class ConduitBlock extends Block implements EntityBlock, SimpleWaterlogge
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
-        BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (blockEntity instanceof ConduitBlockEntity conduitBlockEntity) {
-            conduitBlockEntity.updateConnections();
-            var blockState = level.getBlockState(pos);
-            level.sendBlockUpdated(pos, blockState, blockState, Block.UPDATE_ALL);
+        if(!level.isClientSide) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof ConduitBlockEntity conduitBlockEntity) {
+                conduitBlockEntity.refreshNeighbor();
+            }
         }
+    }
+
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if(!level.isClientSide) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof ConduitBlockEntity conduitBlockEntity) {
+                conduitBlockEntity.onDestroyed();
+            }
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     @Override
