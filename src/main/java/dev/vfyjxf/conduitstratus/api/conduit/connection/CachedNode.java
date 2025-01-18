@@ -5,6 +5,7 @@ import java.util.List;
 public class CachedNode {
     private final ConduitNodeId id;
     private final List<ConduitNodeId> neighbors;
+    private short[] neighborInternalIds;
     private short internalId;
 
     public CachedNode(ConduitNodeId id, List<ConduitNodeId> neighbors) {
@@ -27,5 +28,13 @@ public class CachedNode {
 
     public void setInternalId(short internalId) {
         this.internalId = internalId;
+    }
+
+    public short[] getNeighborInternalIds() {
+        return neighborInternalIds;
+    }
+
+    public void setNeighborInternalIds(short[] neighborInternalIds) {
+        this.neighborInternalIds = neighborInternalIds;
     }
 }

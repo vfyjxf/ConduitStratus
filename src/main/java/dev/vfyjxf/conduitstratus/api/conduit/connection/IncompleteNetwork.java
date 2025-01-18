@@ -15,8 +15,8 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.multimap.MutableMultimap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Multimaps;
+import org.eclipse.collections.impl.utility.Iterate;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -25,18 +25,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class IncompleteNetwork {
     private final AtomicInteger buildIndex = new AtomicInteger(1);
     private final MutableMap<ConduitNodeId, CachedNode> nodes = Maps.mutable.empty();
-    private final UUID id = UUID.randomUUID();
+    private final UUID uuid = UUID.randomUUID();
     private final MutableMultimap<ResourceKey<Level>, ChunkPos> chunks = Multimaps.mutable.set.empty();
 
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
 
-    private ImmutableList<ConduitNodeId> nodeById;
+    private ConduitNodeId[] nodeIdMapping;
+    private CachedNode[] nodeMapping;
     private short[] distances;
     private boolean prepared = false;
 
     public IncompleteNetwork() {
     }
-
 
 
     public boolean isCancelled() {
@@ -47,8 +47,8 @@ public class IncompleteNetwork {
         cancelled.set(true);
     }
 
-    public UUID id() {
-        return id;
+    public UUID uuid() {
+        return uuid;
     }
 
     public void addChunk(ResourceKey<Level> dim, ChunkPos pos) {
@@ -63,12 +63,16 @@ public class IncompleteNetwork {
         return chunks.keyMultiValuePairsView();
     }
 
-    public CachedNode getNode(ConduitNodeId id) {
-        return nodes.get(id);
+    public CachedNode getNode(ConduitNodeId nodeId) {
+        return nodes.get(nodeId);
+    }
+
+    public CachedNode getNode(short internalId) {
+        return nodeMapping[internalId];
     }
 
     public ImmutableList<ConduitNodeId> getNodes() {
-        return nodeById;
+        return Lists.immutable.of(nodeIdMapping);
     }
 
 
@@ -80,12 +84,9 @@ public class IncompleteNetwork {
     }
 
 
-    public List<ConduitNodeId> cachedNeighbors(ConduitNodeId nodeId) {
-        CachedNode node = nodes.get(nodeId);
-        if (node == null) {
-            return null;
-        }
-        return node.getNeighbors();
+    public short[] cachedNeighbors(short internalId) {
+        CachedNode node = nodeMapping[internalId];
+        return node.getNeighborInternalIds();
     }
 
 
@@ -96,29 +97,45 @@ public class IncompleteNetwork {
         }
 
         // distances 是一个半对称矩阵，用于存储节点之间的距离（不含对角线，下半部分）
-        nodeById = Lists.immutable.ofAll(nodes.keySet());
-        distances = new short[nodeById.size() * (nodeById.size() - 1) / 2];
-        for (int i = 0; i < nodeById.size(); i++) {
-            ConduitNodeId id = nodeById.get(i);
-            nodes.get(id).setInternalId((short) i);
+        nodeIdMapping = Iterate.toArray(nodes.keySet(), new ConduitNodeId[0]);
+
+        distances = new short[nodeIdMapping.length * (nodeIdMapping.length - 1) / 2];
+
+        nodeMapping = new CachedNode[nodeIdMapping.length];
+
+        for (int i = 0; i < nodeIdMapping.length; i++) {
+            ConduitNodeId id = nodeIdMapping[i];
+            CachedNode node = nodes.get(id);
+            node.setInternalId((short) i);
+            nodeMapping[i] = node;
         }
+
+        for (int i = 0; i < nodeIdMapping.length; i++) {
+            CachedNode node = nodeMapping[i];
+            List<ConduitNodeId> neighbors = node.getNeighbors();
+            short[] neighborInternalIds = new short[neighbors.size()];
+            for (int j = 0; j < neighbors.size(); j++) {
+                neighborInternalIds[j] = nodeMapping[getNodeIdIndex(neighbors.get(j))].getInternalId();
+            }
+            node.setNeighborInternalIds(neighborInternalIds);
+        }
+
 
         prepared = true;
     }
 
-    @Nullable
-    public ConduitNodeId nextToBuild() {
+    public short nextToBuild() {
         if (cancelled.get()) {
-            return null;
+            return -1;
         }
-        if (buildIndex.get() >= nodeById.size() - 1) {
-            return null;
+        if (buildIndex.get() >= nodeIdMapping.length - 1) {
+            return -1;
         }
-        return nodeById.get(buildIndex.getAndIncrement());
+        return (short) buildIndex.getAndIncrement();
     }
 
     public boolean finished() {
-        return buildIndex.get() >= nodeById.size() - 1;
+        return buildIndex.get() >= nodeIdMapping.length - 1;
     }
 
 
@@ -130,21 +147,22 @@ public class IncompleteNetwork {
             throw new IllegalStateException("Network is not finished");
         }
 
-        Object2ShortMap<ConduitNodeId> nodeIndex = new Object2ShortOpenHashMap<>(nodeById.size());
-        for (int i = 0; i < nodeById.size(); i++) {
-            nodeIndex.put(nodeById.get(i), (short) i);
+        Object2ShortMap<ConduitNodeId> nodeIndex = new Object2ShortOpenHashMap<>(nodeIdMapping.length);
+        for (int i = 0; i < nodeIdMapping.length; i++) {
+            nodeIndex.put(nodeIdMapping[i], (short) i);
         }
 
         ConduitDistance distance = new ConduitDistance(distances, nodeIndex);
 
-        return NetworkBuilder.buildNetwork(nodeById, distance);
+        ImmutableList<ConduitNodeId> nodes = Lists.immutable.of(nodeIdMapping);
+        return NetworkBuilder.buildNetwork(nodes, distance);
     }
 
     public void setDistance(short from, short to, int distance) {
         if (from == to) {
             throw new IllegalArgumentException("from == to");
         }
-        int index = ConduitDistance.getDistanceIndex(from, to, nodeById.size());
+        int index = ConduitDistance.getDistanceIndex(from, to, nodeIdMapping.length);
         distances[index] = (short) distance;
     }
 

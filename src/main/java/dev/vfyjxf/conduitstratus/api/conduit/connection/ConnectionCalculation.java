@@ -30,6 +30,8 @@ public class ConnectionCalculation {
 
     private record ConnectingNode(ConduitNodeId id, NodeBFSIterator bfs, IncompleteNetwork network) {
     }
+    private record ComputingNode(short internalId, FastNodeBFSIterator bfs, IncompleteNetwork network) {
+    }
 
     private final MutableMap<UUID, IncompleteNetwork> incompleteNetworks = Maps.mutable.empty();
 
@@ -41,7 +43,7 @@ public class ConnectionCalculation {
     private final List<IncompleteNetwork> finishedNetworks = new ArrayList<>();
 
     // 用于连接计算的迭代器
-    private final ConnectingNode[] connectingNodes;
+    private final ComputingNode[] computingNodes;
 
     private ConnectingNode collectingNode = null;
     private MinecraftServer server = null;
@@ -59,7 +61,7 @@ public class ConnectionCalculation {
 
     private IncompleteNetwork createNetwork() {
         IncompleteNetwork network = new IncompleteNetwork();
-        incompleteNetworks.put(network.id(), network);
+        incompleteNetworks.put(network.uuid(), network);
 
         return network;
     }
@@ -77,7 +79,7 @@ public class ConnectionCalculation {
             }
 
             for (var pos : entry.getTwo()) {
-                level.getChunkSource().removeRegionTicket(connectionTicketType, pos, 0, network.id());
+                level.getChunkSource().removeRegionTicket(connectionTicketType, pos, 0, network.uuid());
             }
 
         }
@@ -117,7 +119,6 @@ public class ConnectionCalculation {
             return;
         }
         tickNetwork();
-//        tickConnect();
         finishNetworks();
     }
 
@@ -135,7 +136,7 @@ public class ConnectionCalculation {
     public ConnectionCalculation() {
         final int MAX_CONNECTION_PARALLEL = Runtime.getRuntime().availableProcessors() + 1;
         // 单线程先
-        connectingNodes = new ConnectingNode[MAX_CONNECTION_PARALLEL];
+        computingNodes = new ComputingNode[MAX_CONNECTION_PARALLEL];
         Thread[] computeThreads = new Thread[MAX_CONNECTION_PARALLEL];
 
         for (int i = 0; i < MAX_CONNECTION_PARALLEL; i++) {
@@ -153,9 +154,8 @@ public class ConnectionCalculation {
                         computeLock.unlock();
                     }
 
-                    while (tickIdle(threadId)) {
+                    while (tickDistanceCompute(threadId)) {
                         Thread.yield();
-                        // do nothing
                     }
                 }
             });
@@ -167,10 +167,11 @@ public class ConnectionCalculation {
 
     private void prepareNetwork(IncompleteNetwork network, NodeBFSIterator bfs) {
         if (network.isCancelled()) {
-            log.info("Network {} is cancelled loading", network.id());
-            removeNetwork(network.id());
+            log.info("Network {} is cancelled loading", network.uuid());
+            removeNetwork(network.uuid());
             return;
         }
+        // FIXME!!: limit the number of nodes to SHORT.MAX_VALUE
         network.prepare();
 
         updateDistance(network, bfs);
@@ -178,7 +179,7 @@ public class ConnectionCalculation {
         computeLock.lock();
         try {
             pendingNetworks.add(network);
-            computeCondition.signal();
+            computeCondition.signalAll();
         } finally {
             computeLock.unlock();
         }
@@ -197,9 +198,8 @@ public class ConnectionCalculation {
             log.error("Trying to update distance for a node that is not in cache: node {}", nodes.getFirst().nodeId);
             throw new IllegalStateException("Trying to update distance for a node that is not in cache");
         }
-        ConduitNodeId from = cache.getId();
 
-        short fromIndex = network.getNodeIdIndex(from);
+        short fromIndex = cache.getInternalId();
 
         if (fromIndex == -1) {
             throw new IllegalStateException("Trying to update distance for a node that is not in network");
@@ -214,7 +214,31 @@ public class ConnectionCalculation {
             network.setDistance(fromIndex, toIndex, iterNode.distance);
         }
 
+    }
 
+    private void updateDistance(IncompleteNetwork network, FastNodeBFSIterator bfs) {
+        List<FastNodeBFSIterator.IterNode> nodes = bfs.getNodes();
+        if (nodes.isEmpty()) {
+            return;
+        }
+
+
+        CachedNode cache = network.getNode(nodes.getFirst().nodeId());
+
+        short fromIndex = cache.getInternalId();
+
+        if (fromIndex == -1) {
+            throw new IllegalStateException("Trying to update distance for a node that is not in network");
+        }
+
+        for (int i = 1; i < nodes.size(); i++) {
+            FastNodeBFSIterator.IterNode iterNode = nodes.get(i);
+            short toIndex = iterNode.nodeId();
+            if (toIndex == -1) {
+                throw new IllegalStateException("Trying to update distance for a node that is not in network");
+            }
+            network.setDistance(fromIndex, toIndex, iterNode.distance());
+        }
     }
 
     private ConduitNode searchNode(ConduitNodeId nodeId) {
@@ -236,7 +260,7 @@ public class ConnectionCalculation {
         ChunkPos chunkPos = new ChunkPos(nodeId.pos());
         if (!network.hasChunk(nodeId.dimension(), chunkPos)) {
             network.addChunk(nodeId.dimension(), chunkPos);
-            level.getChunkSource().addRegionTicket(connectionTicketType, chunkPos, 0, network.id());
+            level.getChunkSource().addRegionTicket(connectionTicketType, chunkPos, 0, network.uuid());
         }
         BlockEntity be = level.getBlockEntity(nodeId.pos());
         if (be == null) {
@@ -257,13 +281,6 @@ public class ConnectionCalculation {
         return neighbors;
     }
 
-    public void tickConnect() {
-        // TODO: 多线程
-//        for (int i = 0; i < MAX_CONNECTION_PARALLEL; i++) {
-//            tickIdle(i);
-//        }
-    }
-
     public void finishNetworks() {
 
         // update finished network
@@ -281,10 +298,10 @@ public class ConnectionCalculation {
 
 
         for (IncompleteNetwork network : networks) {
-            log.info("Building network {} with {} nodes", network.id(), network.getNodes().size());
+            log.info("Building network {} with {} nodes", network.uuid(), network.getNodes().size());
             network.build();
-            removeNetwork(network.id());
-            log.info("Network {} is built", network.id());
+            removeNetwork(network.uuid());
+            log.info("Network {} is built", network.uuid());
         }
     }
 
@@ -372,16 +389,16 @@ public class ConnectionCalculation {
                     }
                 }
 
-                removeNetwork(current.network().id());
+                removeNetwork(current.network().uuid());
                 collectingNode = null;
-                log.warn("Network {} has invalid nodes, cancelled", current.network().id());
+                log.warn("Network {} has invalid nodes, cancelled", current.network().uuid());
                 finishTimer("Preparing network");
                 continue processing;
             }
 
             prepareNetwork(current.network(), current.bfs());
             collectingNode = null;
-            log.info("Prepared network with {} nodes, id: {}", current.network().getNodes().size(), current.network().id());
+            log.info("Prepared network with {} nodes, id: {}", current.network().getNodes().size(), current.network().uuid());
             finishTimer("Preparing network");
 
         }
@@ -403,16 +420,16 @@ public class ConnectionCalculation {
         return invalidNodes;
     }
 
-    private ConduitNodeId takePendingNode() {
+    private short takePendingNode() {
 
         while (true) {
             IncompleteNetwork network = pendingNetworks.peek();
             if (network == null) {
-                return null;
+                return -1;
             }
 
-            ConduitNodeId nodeId = network.nextToBuild();
-            if (nodeId != null) {
+            short nodeId = network.nextToBuild();
+            if (nodeId > 0) {
                 return nodeId;
             }
 
@@ -422,35 +439,33 @@ public class ConnectionCalculation {
         }
     }
 
-    private boolean tickIdle(int threadId) {
+    private boolean tickDistanceCompute(int threadId) {
         int iter = 0;
         processing:
         while (true) {
-
-            if (connectingNodes[threadId] == null) {
-                ConduitNodeId nodeId;
+            if (computingNodes[threadId] == null) {
+                short internalNodeId;
                 IncompleteNetwork network;
                 computeLock.lock();
                 try {
-                    nodeId = takePendingNode();
+                    internalNodeId = takePendingNode();
                     network = pendingNetworks.peek();
                 } finally {
                     computeLock.unlock();
                 }
 
-                if (nodeId == null || network == null) {
+                if (internalNodeId < 0 || network == null) {
                     return false;
                 }
 
-
-                NodeBFSIterator bfs = new NodeBFSIterator(network::cachedNeighbors, nodeId);
-                connectingNodes[threadId] = new ConnectingNode(nodeId, bfs, network);
+                FastNodeBFSIterator bfs = new FastNodeBFSIterator(network::cachedNeighbors, internalNodeId);
+                computingNodes[threadId] = new ComputingNode(internalNodeId, bfs, network);
             }
 
-            ConnectingNode current = connectingNodes[threadId];
+            ComputingNode current = computingNodes[threadId];
 
             IncompleteNetwork network = current.network();
-            NodeBFSIterator bfs = current.bfs();
+            FastNodeBFSIterator bfs = current.bfs();
 
             while (bfs.hasNext()) {
                 if (iter >= MAX_COMPUTE_ITER_PER_TICK) {
@@ -466,13 +481,13 @@ public class ConnectionCalculation {
             }
 
             if (current.network().isCancelled()) {
-                connectingNodes[threadId] = null;
+                computingNodes[threadId] = null;
                 continue processing;
             }
             // 计算完成，保存距离
             updateDistance(current.network(), current.bfs());
 
-            connectingNodes[threadId] = null;
+            computingNodes[threadId] = null;
 
         }
 
