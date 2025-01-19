@@ -1,10 +1,16 @@
 package dev.vfyjxf.conduitstratus.api.conduit.connection;
 
+import dev.vfyjxf.conduitstratus.api.conduit.network.BaseNetwork;
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkBuilder;
+import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkStatus;
+import dev.vfyjxf.conduitstratus.init.values.ModValues;
 import it.unimi.dsi.fastutil.objects.Object2ShortMap;
 import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import org.eclipse.collections.api.RichIterable;
@@ -15,18 +21,24 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.multimap.MutableMultimap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Multimaps;
+import org.eclipse.collections.impl.list.fixed.ArrayAdapter;
 import org.eclipse.collections.impl.utility.Iterate;
+import org.jetbrains.annotations.NotNull;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class IncompleteNetwork {
+public class IncompleteNetwork implements BaseNetwork {
     private final AtomicInteger buildIndex = new AtomicInteger(1);
     private final MutableMap<ConduitNodeId, CachedNode> nodes = Maps.mutable.empty();
     private final UUID uuid = UUID.randomUUID();
     private final MutableMultimap<ResourceKey<Level>, ChunkPos> chunks = Multimaps.mutable.set.empty();
+    private final MinecraftServer server;
+    private static final TicketType<UUID> connectionTicketType = TicketType.create("conduit_stratus:connection_calculation", UUID::compareTo);
+
 
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
 
@@ -36,11 +48,13 @@ public class IncompleteNetwork {
     private boolean prepared = false;
     private boolean computeStart = false;
     private Instant startTime = null;
+
     public Instant getStartTime() {
         return startTime;
     }
 
-    public IncompleteNetwork() {
+    public IncompleteNetwork(MinecraftServer server) {
+        this.server = server;
     }
 
 
@@ -52,15 +66,76 @@ public class IncompleteNetwork {
         cancelled.set(true);
     }
 
+    @Override
+    @NotNull
     public UUID uuid() {
         return uuid;
     }
 
-    public void addChunk(ResourceKey<Level> dim, ChunkPos pos) {
-        chunks.put(dim, pos);
+    @Override
+    public void destroy() {
+        this.cancel();
+        this.clearChunkLoad();
+        this.nodes.clear();
+        this.distances = null;
+        this.nodeIdMapping = null;
+        this.nodeMapping = null;
+
     }
 
-    public boolean hasChunk(ResourceKey<Level> dim, ChunkPos pos) {
+    @Override
+    @NotNull
+    public List<ConduitNodeId> nodeIds() {
+        if (cancelled.get()) {
+            return Lists.mutable.empty();
+        }
+        if (computeStart) {
+            return ArrayAdapter.adapt(nodeIdMapping);
+        }
+        return Lists.mutable.ofAll(nodes.keySet());
+    }
+
+    @Override
+    @NotNull
+    public NetworkStatus status() {
+        if (this.cancelled.get()) {
+            return NetworkStatus.Destroyed;
+        }
+        if (this.prepared) {
+            return NetworkStatus.Computing;
+        }
+
+        return NetworkStatus.Constructing;
+    }
+
+    public void addChunkLoad(ServerLevel level, ChunkPos chunkPos) {
+        if (computeStart) {
+            throw new IllegalStateException("Nodes have been released");
+        }
+        ResourceKey<Level> dim = level.dimension();
+        if (!this.hasChunk(dim, chunkPos)) {
+            chunks.put(dim, chunkPos);
+            level.getChunkSource().addRegionTicket(connectionTicketType, chunkPos, 0, this.uuid());
+        }
+    }
+
+    public void clearChunkLoad() {
+        for (var entry : this.getChunks()) {
+            var level = server.getLevel(entry.getOne());
+            if (level == null) {
+                continue;
+            }
+
+            for (var pos : entry.getTwo()) {
+                level.getChunkSource().removeRegionTicket(connectionTicketType, pos, 0, this.uuid());
+            }
+        }
+
+        chunks.clear();
+    }
+
+
+    private boolean hasChunk(ResourceKey<Level> dim, ChunkPos pos) {
         return chunks.get(dim).contains(pos);
     }
 
@@ -98,10 +173,27 @@ public class IncompleteNetwork {
     }
 
 
-    public void prepare() {
+    public boolean prepare() {
 
         if (nodes.size() > Short.MAX_VALUE) {
-            throw new IllegalArgumentException("Too many nodes");
+
+            for(var nodeId : nodes.keysView()) {
+                var level = server.getLevel(nodeId.dimension());
+                if (level == null) {
+                    continue;
+                }
+
+                var pos = nodeId.pos();
+
+                var node = level.getCapability(ModValues.CONDUIT_NODE_CAP, pos);
+                if (node == null) {
+                    continue;
+                }
+
+                node.setNetwork(null);
+                node.setInvalid();
+            }
+            return false;
         }
 
         // distances 是一个半对称矩阵，用于存储节点之间的距离（不含对角线，下半部分）
@@ -119,6 +211,8 @@ public class IncompleteNetwork {
         }
 
         prepared = true;
+
+        return true;
     }
 
     public void prepareInternalIds() {
@@ -153,11 +247,14 @@ public class IncompleteNetwork {
     }
 
     public boolean finished() {
+        if (cancelled.get()) {
+            return false;
+        }
         return buildIndex.get() >= nodeIdMapping.length - 1;
     }
 
 
-    public Network build() {
+    public Network build(MinecraftServer server) {
         if (cancelled.get()) {
             return null;
         }
@@ -171,12 +268,13 @@ public class IncompleteNetwork {
         }
 
         ConduitDistance distance = new ConduitDistance(distances, nodeIndex);
-
-        ImmutableList<ConduitNodeId> nodes = Lists.immutable.of(nodeIdMapping);
-        return NetworkBuilder.buildNetwork(nodes, distance);
+        return NetworkBuilder.buildNetwork(this.uuid(), server, this.nodeIds(), distance);
     }
 
     public void setDistance(short from, short to, int distance) {
+        if (cancelled.get()) {
+            return;
+        }
         if (from == to) {
             throw new IllegalArgumentException("from == to");
         }
@@ -185,7 +283,7 @@ public class IncompleteNetwork {
     }
 
     public short getNodeIdIndex(ConduitNodeId nodeId) {
-        if (computeStart) {
+        if (computeStart || cancelled.get()) {
             throw new IllegalStateException("Nodes have been released");
         }
         var node = nodes.get(nodeId);

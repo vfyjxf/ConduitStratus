@@ -2,7 +2,6 @@ package dev.vfyjxf.conduitstratus.conduit.blockentity;
 
 import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
 import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNode;
-import dev.vfyjxf.conduitstratus.api.conduit.connection.ConnectionCalculation;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkBuilder;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
@@ -178,9 +177,6 @@ public class ConduitBlockEntity extends NetworkBlockEntity implements ConduitNod
     public void setRemoved() {
         super.setRemoved();
         this.connectionState.clear();
-        if (this.networkNode.available()) {
-            this.networkNode.getNetwork().destroy();
-        }
     }
 
     @Override
@@ -192,29 +188,7 @@ public class ConduitBlockEntity extends NetworkBlockEntity implements ConduitNod
     private void onInitTick() {
         assert level != null;
         this.networkNode.build(level, this);
-        ConnectionCalculation.getInstance().addIdleNode(this);
-    }
-
-    // conduit nodes
-
-    @Override
-    public boolean valid() {
-        return !this.invalid;
-    }
-
-    @Override
-    public boolean initializing() {
-        return !this.networkNode.available();
-    }
-
-    @Override
-    public void setValid(boolean valid) {
-        this.invalid = !valid;
-    }
-
-    @Override
-    public void refresh() {
-
+        this.scheduleNetwork(0);
     }
 
 

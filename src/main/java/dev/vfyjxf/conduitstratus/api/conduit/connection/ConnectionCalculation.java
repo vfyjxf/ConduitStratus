@@ -4,10 +4,8 @@ import dev.vfyjxf.conduitstratus.init.values.ModValues;
 import dev.vfyjxf.conduitstratus.utils.StepTimer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
@@ -25,7 +23,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Stream;
 
 public class ConnectionCalculation {
 
@@ -33,7 +30,29 @@ public class ConnectionCalculation {
 
     private record ConnectingNode(ConduitNodeId id, NodeBFSIterator bfs, IncompleteNetwork network) {
     }
+
     private record ComputingNode(short internalId, FastNodeBFSIterator bfs, IncompleteNetwork network) {
+    }
+
+    private static class ScheduledNode implements Comparable<ScheduledNode> {
+        private final ConduitNode node;
+        private final long time;
+        private boolean cancelled = false;
+
+        public ScheduledNode(ConduitNode node, long time) {
+            this.node = node;
+            this.time = time;
+        }
+
+        @Override
+        public int compareTo(ScheduledNode o) {
+            return Long.compare(time, o.time);
+        }
+
+        public void cancel() {
+            this.cancelled = true;
+        }
+
     }
 
     private final MutableMap<UUID, IncompleteNetwork> incompleteNetworks = Maps.mutable.empty();
@@ -47,52 +66,17 @@ public class ConnectionCalculation {
 
     // 用于连接计算的迭代器
     private final ComputingNode[] computingNodes;
+    private final Thread[] computeThreads;
 
     private ConnectingNode collectingNode = null;
     private MinecraftServer server = null;
-
-    private final TicketType<UUID> connectionTicketType = TicketType.create("conduit_stratus:connection_calculation", UUID::compareTo);
-
-    public void cancelLoading(UUID id) {
-        IncompleteNetwork network = incompleteNetworks.get(id);
-        if (network == null) {
-            return;
-        }
-        network.cancel();
-    }
-
-
-    private IncompleteNetwork createNetwork() {
-        IncompleteNetwork network = new IncompleteNetwork();
-        incompleteNetworks.put(network.uuid(), network);
-
-        return network;
-    }
-
-    private void removeNetwork(UUID id) {
-        IncompleteNetwork network = incompleteNetworks.remove(id);
-        if (network == null) {
-            return;
-        }
-
-        for (var entry : network.getChunks()) {
-            var level = server.getLevel(entry.getOne());
-            if (level == null) {
-                continue;
-            }
-
-            for (var pos : entry.getTwo()) {
-                level.getChunkSource().removeRegionTicket(connectionTicketType, pos, 0, network.uuid());
-            }
-
-        }
-    }
-
 
     // 节点支持延迟连接
 
 
     private final LinkedHashMap<ConduitNodeId, ConduitNode> idleNodes = new LinkedHashMap<>();
+    private final PriorityQueue<ScheduledNode> schedulingIdleNodes = new PriorityQueue<>();
+    private final HashMap<ConduitNodeId, ScheduledNode> schedulingIdleNodesMap = new HashMap<>();
 
 
     private static final ConnectionCalculation instance = new ConnectionCalculation();
@@ -108,40 +92,20 @@ public class ConnectionCalculation {
 
     }
 
+    private final int MAX_CONNECTION_PARALLEL = Runtime.getRuntime().availableProcessors();
 
     private void onServerStart(ServerStartedEvent event) {
         this.server = event.getServer();
-    }
-
-    private void onServerStop(ServerStoppedEvent event) {
-        this.server = null;
-    }
-
-    private void onServerTick(LevelTickEvent.Post event) {
-        if (event.getLevel().isClientSide) {
-            return;
+        this.pendingNetworks.clear();
+        this.finishedNetworks.clear();
+        this.incompleteNetworks.clear();
+        this.idleNodes.clear();
+        this.schedulingIdleNodes.clear();
+        this.tickNetworkTimer.clear();
+        this.collectingNode = null;
+        for (int i = 0; i < MAX_CONNECTION_PARALLEL; i++) {
+            computingNodes[i] = null;
         }
-        tickNetwork();
-        finishNetworks();
-    }
-
-
-    public void addIdleNode(ConduitNode node) {
-
-        idleNodes.put(node.conduitId(), node);
-    }
-
-
-    private static final int MAX_COLLECT_ITER_PER_TICK = 500;
-    private static final int MAX_COMPUTE_ITER_PER_TICK = 1000;
-
-
-    public ConnectionCalculation() {
-        final int MAX_CONNECTION_PARALLEL = Runtime.getRuntime().availableProcessors();
-        // 单线程先
-        computingNodes = new ComputingNode[MAX_CONNECTION_PARALLEL];
-        Thread[] computeThreads = new Thread[MAX_CONNECTION_PARALLEL];
-
         for (int i = 0; i < MAX_CONNECTION_PARALLEL; i++) {
             final int threadId = i;
             computeThreads[threadId] = new Thread(() -> {
@@ -167,15 +131,80 @@ public class ConnectionCalculation {
         }
     }
 
+    private void onServerStop(ServerStoppedEvent event) {
+        computeLock.lock();
+        try {
+            for (IncompleteNetwork network : pendingNetworks) {
+                network.destroy();
+            }
+
+            for (IncompleteNetwork network : finishedNetworks) {
+                network.destroy();
+            }
+
+            for (ComputingNode node : computingNodes) {
+                if (node != null) {
+                    node.network().destroy();
+                }
+            }
+
+        } finally {
+            computeLock.unlock();
+        }
+        for (Thread thread : computeThreads) {
+            try {
+                thread.interrupt();
+                thread.join();
+            } catch (InterruptedException e) {
+                log.error("Thread interrupted", e);
+            }
+        }
+        this.server = null;
+    }
+
+    private void onServerTick(LevelTickEvent.Post event) {
+        if (event.getLevel().isClientSide) {
+            return;
+        }
+        tickNetwork();
+        finishNetworks();
+    }
+
+
+    public void addIdleNode(ConduitNode node, int delay) {
+        ScheduledNode scheduledNode = schedulingIdleNodesMap.remove(node.conduitId());
+        if (scheduledNode != null) {
+            scheduledNode.cancel();
+        }
+        ScheduledNode scheduled = new ScheduledNode(node, this.ticks + delay);
+        schedulingIdleNodes.add(scheduled);
+        schedulingIdleNodesMap.put(node.conduitId(), scheduled);
+    }
+
+
+    private static final int MAX_COLLECT_ITER_PER_TICK = 500;
+    private static final int MAX_COMPUTE_ITER_PER_TICK = 1000;
+
+
+    public ConnectionCalculation() {
+        // 单线程先
+        computingNodes = new ComputingNode[MAX_CONNECTION_PARALLEL];
+        computeThreads = new Thread[MAX_CONNECTION_PARALLEL];
+    }
+
 
     private void prepareNetwork(IncompleteNetwork network, NodeBFSIterator bfs) {
         if (network.isCancelled()) {
             log.info("Network {} is cancelled loading", network.uuid());
-            removeNetwork(network.uuid());
+            network.destroy();
             return;
         }
-        // FIXME!!: limit the number of nodes to SHORT.MAX_VALUE
-        network.prepare();
+
+        if (!network.prepare()) {
+            log.error("Network {} is too large", network.uuid());
+            network.destroy();
+            return;
+        }
 
         updateDistance(network, bfs);
 
@@ -237,7 +266,7 @@ public class ConnectionCalculation {
             throw new IllegalStateException("Trying to update distance for a node that is not in network");
         }
 
-        for(int i = 1; i < nodes.size(); i++){
+        for (int i = 1; i < nodes.size(); i++) {
             long packed = nodes.get(i);
             short toIndex = FastNodeBFSIterator.unpackNodeId(packed);
             if (toIndex == -1) {
@@ -257,6 +286,11 @@ public class ConnectionCalculation {
 
 
     private List<ConduitNodeId> searchNeighbors(IncompleteNetwork network, ConduitNodeId nodeId) {
+        CachedNode cachedNode = network.getNode(nodeId);
+        if (cachedNode != null) {
+            return cachedNode.getNeighbors();
+        }
+
         ServerLevel level = server.getLevel(nodeId.dimension());
         if (level == null) {
             log.warn("Node {} is in unavailable dimension", nodeId);
@@ -264,15 +298,8 @@ public class ConnectionCalculation {
         }
 
         ChunkPos chunkPos = new ChunkPos(nodeId.pos());
-        if (!network.hasChunk(nodeId.dimension(), chunkPos)) {
-            network.addChunk(nodeId.dimension(), chunkPos);
-            level.getChunkSource().addRegionTicket(connectionTicketType, chunkPos, 0, network.uuid());
-        }
-        BlockEntity be = level.getBlockEntity(nodeId.pos());
-        if (be == null) {
-            log.warn("Node {} is not available", nodeId);
-            return null;
-        }
+
+        network.addChunkLoad(level, chunkPos);
 
         ConduitNode node = level.getCapability(ModValues.CONDUIT_NODE_CAP, nodeId.pos());
 
@@ -281,9 +308,16 @@ public class ConnectionCalculation {
             return null;
         }
 
+        if (node.getNetwork() != null) {
+            log.warn("Node {} is already in a network", nodeId);
+            node.getNetwork().destroy();
+            return null;
+        }
+
         List<ConduitNodeId> neighbors = node.adjacentNodes();
 
         network.addNode(new CachedNode(nodeId, neighbors));
+        node.setNetwork(network);
         return neighbors;
     }
 
@@ -304,9 +338,12 @@ public class ConnectionCalculation {
 
 
         for (IncompleteNetwork network : networks) {
+            if (network.isCancelled()) {
+                continue;
+            }
             log.info("Building network {} with {} nodes", network.uuid(), network.getNodes().size());
-            network.build();
-            removeNetwork(network.uuid());
+            network.build(this.server);
+            network.clearChunkLoad();
             log.info("Network {} is built", network.uuid());
         }
     }
@@ -318,11 +355,7 @@ public class ConnectionCalculation {
             var entry = it.next();
             var node = entry.getValue();
 
-            if (node.initializing()) {
-                continue;
-            }
-
-            if (!node.valid()) {
+            if (node.isInvalid() || node.getNetwork() != null) {
                 it.remove();
                 continue;
             }
@@ -342,15 +375,32 @@ public class ConnectionCalculation {
         tickNetworkTimer.clear();
     }
 
+    private long ticks = 0;
+
     public void tickNetwork() {
         if (server == null) {
             return;
         }
 
+        while (!schedulingIdleNodes.isEmpty()) {
+            if (schedulingIdleNodes.peek().time > ticks) {
+                break;
+            }
+            ScheduledNode node = schedulingIdleNodes.poll();
+            if(node.cancelled) {
+                continue;
+            }
+            ConduitNodeId nodeId = node.node.conduitId();
+            schedulingIdleNodesMap.remove(nodeId);
+            idleNodes.remove(nodeId);
+            idleNodes.put(nodeId, node.node);
+        }
+
+        ticks++;
+
 
         int iter = 0;
         processing:
-//        for(;;){
         while (true) {
             tickNetworkTimer.start();
             if (collectingNode == null) {
@@ -362,7 +412,7 @@ public class ConnectionCalculation {
                 }
                 // find next network
 
-                IncompleteNetwork network = createNetwork();
+                IncompleteNetwork network = new IncompleteNetwork(server);
 
                 NodeBFSIterator bfs = new NodeBFSIterator((id) -> this.searchNeighbors(network, id), nodeId);
                 collectingNode = new ConnectingNode(nodeId, bfs, network);
@@ -381,21 +431,28 @@ public class ConnectionCalculation {
                 }
             }
 
+            if (current.network().isCancelled()) {
+                log.warn("Network {} has cancelled", current.network().uuid());
+                finishTimer("Preparing network");
+                collectingNode = null;
+                continue processing;
+            }
+
             for (NodeBFSIterator.IterNode iterNode : current.bfs().getNodes()) {
                 idleNodes.remove(iterNode.nodeId);
             }
 
             if (current.bfs().hasInvalid()) {
                 HashSet<ConduitNodeId> invalidNodes = collectInvalidNodes(current);
+                current.network().destroy();
 
                 for (ConduitNodeId invalidNode : invalidNodes) {
                     ConduitNode node = searchNode(invalidNode);
                     if (node != null) {
-                        node.setValid(false);
+                        node.validate();
                     }
                 }
 
-                removeNetwork(current.network().uuid());
                 collectingNode = null;
                 log.warn("Network {} has invalid nodes, cancelled", current.network().uuid());
                 finishTimer("Preparing network");

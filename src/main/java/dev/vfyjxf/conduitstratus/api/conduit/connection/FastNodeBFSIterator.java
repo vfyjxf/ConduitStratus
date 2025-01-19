@@ -1,18 +1,12 @@
 package dev.vfyjxf.conduitstratus.api.conduit.connection;
 
-import dev.vfyjxf.conduitstratus.utils.FastBFSQueue;
 import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
-import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
 import org.eclipse.collections.api.list.primitive.IntList;
-import org.eclipse.collections.api.list.primitive.LongList;
 import org.eclipse.collections.api.list.primitive.MutableIntList;
-import org.eclipse.collections.api.list.primitive.MutableLongList;
 import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
-import org.eclipse.collections.impl.list.mutable.primitive.LongArrayList;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 @ApiStatus.Internal
 public class FastNodeBFSIterator {
@@ -28,7 +22,7 @@ public class FastNodeBFSIterator {
         queue.enqueue(startNode);
     }
 
-    public final FastBFSQueue queue = new FastBFSQueue(32);
+    public final IntArrayFIFOQueue queue = new IntArrayFIFOQueue(16);
     private final BitSet visited = new BitSet(Short.MAX_VALUE);
     private final MutableIntList nodes = new IntArrayList();
     private final NeighborProvider neighborProvider;
@@ -50,11 +44,11 @@ public class FastNodeBFSIterator {
     }
 
     public boolean hasNext() {
-        return queue.notEmpty();
+        return !queue.isEmpty();
     }
 
     public boolean next() {
-        int packed = queue.dequeue();
+        int packed = queue.dequeueInt();
         short currentId = unpackNodeId(packed);
         if(visited.get(currentId)) {
             return true;

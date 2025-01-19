@@ -16,13 +16,13 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Unmodifiable;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 @ApiStatus.NonExtendable
-public interface Network extends EventHandler<NetworkEvent> {
+public interface Network extends EventHandler<NetworkEvent>, BaseNetwork {
 
-    MutableCollection<? extends NetworkNode> getNodes();
-    ImmutableList<ConduitNodeId> getNodeIds();
+    MutableCollection<? extends NetworkNode> getActiveNodes();
 
     NetworkNode getNode(ResourceKey<Level> dimension, BlockPos pos);
 

@@ -4,7 +4,6 @@ import dev.vfyjxf.conduitstratus.conduit.ConduitBlockItem;
 import dev.vfyjxf.conduitstratus.conduit.blockentity.ConduitBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -72,7 +71,7 @@ public class ConduitBlock extends Block implements EntityBlock, SimpleWaterlogge
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
-        if(!level.isClientSide) {
+        if (!level.isClientSide) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof ConduitBlockEntity conduitBlockEntity) {
                 conduitBlockEntity.refreshNeighbor();
@@ -82,11 +81,10 @@ public class ConduitBlock extends Block implements EntityBlock, SimpleWaterlogge
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if(!level.isClientSide) {
-            BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof ConduitBlockEntity conduitBlockEntity) {
-                conduitBlockEntity.onDestroyed();
-            }
+
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof ConduitBlockEntity conduitBlockEntity) {
+            conduitBlockEntity.onDestroyed();
         }
         super.onRemove(state, level, pos, newState, movedByPiston);
     }

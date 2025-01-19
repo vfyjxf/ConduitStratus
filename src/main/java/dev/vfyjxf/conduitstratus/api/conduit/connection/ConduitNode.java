@@ -1,11 +1,11 @@
 package dev.vfyjxf.conduitstratus.api.conduit.connection;
 
-import dev.vfyjxf.conduitstratus.conduit.network.NetworkHolder;
+import dev.vfyjxf.conduitstratus.conduit.network.BaseNetworkHolder;
 import net.minecraft.core.Direction;
 
 import java.util.List;
 
-public interface ConduitNode extends NetworkHolder {
+public interface ConduitNode extends BaseNetworkHolder {
     // 导管的位置和坐标
     ConduitNodeId conduitId();
 
@@ -24,29 +24,12 @@ public interface ConduitNode extends NetworkHolder {
     boolean refreshRemote();
     boolean refreshNeighbor();
 
+    boolean isInvalid();
 
-    enum State {
-        // 无效节点，无法连接
-        INVALID,
-        // 未连接
-        UNCONNECTED,
-        // 连接中
-        CONNECTING,
-        // 已连接
-        CONNECTED,
-        // 连接失败
-        FAILED
-    };
+    boolean validate();
 
-    // 是否有效，连接的时候识别到无效节点会造成连接失败，并对连接的节点调用 setValid(false)
-    boolean valid();
+    void scheduleNetwork(int delay);
 
-    // 是否正在初始化，会在初始化的时候推迟连接
-    boolean initializing();
-
-    // 设置节点是否有效，无效节点会被标记并通知更新
-    void setValid(boolean valid);
-
-    // 刷新节点，在连接到的节点更新的时候会调用，触发节点刷新自身的连接
-    void refresh();
+    // called when the network is tool large
+    void setInvalid();
 }

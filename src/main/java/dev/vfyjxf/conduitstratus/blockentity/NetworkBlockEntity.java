@@ -2,11 +2,8 @@ package dev.vfyjxf.conduitstratus.blockentity;
 
 import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNode;
 import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNodeId;
-import dev.vfyjxf.conduitstratus.api.conduit.network.InitNetworkNode;
-import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
-import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkBuilder;
-import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
-import dev.vfyjxf.conduitstratus.conduit.network.NetworkHolder;
+import dev.vfyjxf.conduitstratus.api.conduit.connection.ConnectionCalculation;
+import dev.vfyjxf.conduitstratus.api.conduit.network.*;
 import dev.vfyjxf.conduitstratus.init.values.ModValues;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,37 +31,40 @@ import java.util.Objects;
 public abstract class NetworkBlockEntity extends BlockEntity implements ConduitNode {
 
     private static final Logger log = LoggerFactory.getLogger(NetworkBlockEntity.class);
+    // TODO: clear this field
     protected final InitNetworkNode networkNode = NetworkBuilder.createInitNetworkNode(this);
 
-    public NetworkBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
-        super(type, pos, blockState);
+    public @Nullable NetworkNode getNode() {
+        return networkNode.getNode();
     }
 
     public final InitNetworkNode getNetworkNode() {
         return networkNode;
     }
 
-    public @Nullable Network getNetwork() {
-        return networkNode.getNetwork();
+    private BaseNetwork network;
+    private boolean invalid;
+    private boolean validated;
+    private boolean destroyed;
+
+    public NetworkBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
+        super(type, pos, blockState);
     }
 
+
+    @Nullable
+    public BaseNetwork getNetwork() {
+        if (network != null && network.status() == NetworkStatus.Destroyed) {
+            network = null;
+        }
+        return network;
+    }
 
     @Override
-    public void setNetwork(Network network) {
-        if (!this.networkNode.available()) {
-            throw new IllegalStateException("Network is not initialized yet or it was destroyed");
-        }
-        if (!(this.getNode() instanceof NetworkHolder networkHolder)) {
-            throw new IllegalStateException("Not a network holder");
-        }
-
-        networkHolder.setNetwork(network);
-
+    public void setNetwork(@Nullable BaseNetwork network) {
+        this.network = network;
     }
 
-    public @Nullable NetworkNode getNode() {
-        return networkNode.getNode();
-    }
 
     public void markForUpdate() {
         this.requestModelDataUpdate();
@@ -98,6 +98,9 @@ public abstract class NetworkBlockEntity extends BlockEntity implements ConduitN
     public void setRemoved() {
         super.setRemoved();
         this.networkNode.destroy();
+
+        destroyed = true;
+        invalid = true;
     }
 
     @Override
@@ -194,6 +197,7 @@ public abstract class NetworkBlockEntity extends BlockEntity implements ConduitN
         if (this.level.isClientSide) {
             return;
         }
+
         // only need to notify remote nodes since neighbor nodes will be updated by the block's updateShape
         for (var neighbor : this.remoteNodes) {
             ConduitNode neighborNode = this.findNodeAt(neighbor);
@@ -201,6 +205,7 @@ public abstract class NetworkBlockEntity extends BlockEntity implements ConduitN
                 neighborNode.refreshRemote();
             }
         }
+
     }
 
 
@@ -225,8 +230,16 @@ public abstract class NetworkBlockEntity extends BlockEntity implements ConduitN
     }
 
     @Override
+    public void scheduleNetwork(int delay) {
+        BaseNetwork network = this.getNetwork();
+        if (network != null) {
+            network.destroy();
+        }
+        ConnectionCalculation.getInstance().addIdleNode(this, delay);
+    }
+
+    @Override
     public boolean refreshRemote() {
-        this.remoteNodes.clear();
         MutableList<ConduitNodeId> remoteNodes = Lists.mutable.empty();
         if (collectRemoteNodes(remoteNodes)) {
             boolean addded = false;
@@ -245,6 +258,7 @@ public abstract class NetworkBlockEntity extends BlockEntity implements ConduitN
             if (addded || this.remoteNodes.size() != newNodes.size()) {
                 this.remoteNodes.clear();
                 this.remoteNodes.addAll(newNodes);
+                scheduleNetwork(1);
                 return true;
             }
         }
@@ -255,7 +269,6 @@ public abstract class NetworkBlockEntity extends BlockEntity implements ConduitN
 
     @Override
     public boolean refreshNeighbor() {
-        this.neighborNodes.clear();
         MutableMap<Direction, ConduitNodeId> neighborNodes = Maps.mutable.withInitialCapacity(Direction.values().length);
         boolean added = false;
         for (Direction direction : Direction.values()) {
@@ -285,6 +298,7 @@ public abstract class NetworkBlockEntity extends BlockEntity implements ConduitN
         if (added || this.neighborNodes.size() != neighborNodes.size()) {
             this.neighborNodes.clear();
             this.neighborNodes.putAll(neighborNodes);
+            scheduleNetwork(1);
             return true;
         }
 
@@ -292,24 +306,121 @@ public abstract class NetworkBlockEntity extends BlockEntity implements ConduitN
 
     }
 
-
-    @Override
-    public boolean valid() {
-        return false;
-    }
-
-    @Override
-    public boolean initializing() {
-        return false;
-    }
-
-    @Override
-    public void setValid(boolean valid) {
+    private void refresh() {
+        refreshNeighbor();
+        refreshRemote();
+        getLevel().neighborChanged(getBlockPos(), getBlockState().getBlock(), getBlockPos());
+        validateBiDirectional();
 
     }
 
-    @Override
-    public void refresh() {
+    private boolean validateBiDirectional() {
+        boolean valid = true;
+        outer:
+        for (var neighbor : this.adjacentNodes()) {
+            ConduitNode neighborNode = this.findNodeAt(neighbor);
+            if (neighborNode == null) {
+                continue;
+            }
 
+            for (var neighborNeighbor : neighborNode.adjacentNodes()) {
+                if (neighborNeighbor.equals(this.conduitId())) {
+                    continue outer;
+                }
+            }
+
+            valid = false;
+            break;
+        }
+
+        if (!valid) {
+            this.invalid = true;
+            getLevel().neighborChanged(getBlockPos(), getBlockState().getBlock(), getBlockPos());
+
+            for (var neighbor : this.remoteNodes) {
+                ConduitNode neighborNode = this.findNodeAt(neighbor);
+                if (neighborNode != null) {
+                    neighborNode.refreshRemote();
+                }
+            }
+
+            this.markForSave();
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean validate() {
+        if (destroyed) {
+            return false;
+        }
+        if (validated) {
+            return true;
+        }
+
+        boolean valid = true;
+
+        for (var entry : this.neighborNodes.entrySet()) {
+            ConduitNodeId neighborId = entry.getValue();
+            Direction direction = entry.getKey();
+            ConduitNode neighbor = this.findNodeAt(neighborId);
+            if (neighbor == null) {
+                log.warn("Neighbor at {} is not found", neighborId);
+                valid = false;
+                break;
+            }
+            if (!neighbor.acceptsNeighbor(direction.getOpposite())) {
+                log.warn("Neighbor at {} does not accept connection from {}", neighborId, direction);
+                valid = false;
+                break;
+            }
+        }
+
+        if (!valid) {
+            validated = false;
+            refresh();
+            return false;
+        }
+
+        for (ConduitNodeId remote : this.remoteNodes) {
+            ConduitNode remoteNode = this.findNodeAt(remote);
+            if (remoteNode == null) {
+                log.warn("Remote at {} is not found", remote);
+                valid = false;
+                break;
+            }
+            if (!remoteNode.acceptsRemote(this.conduitId())) {
+                log.warn("Remote at {} does not accept connection from {}", remote, this.conduitId());
+                valid = false;
+                break;
+            }
+        }
+
+        if (!valid) {
+            validated = false;
+            refresh();
+            return false;
+        }
+
+        validated = true;
+        return validateBiDirectional();
+    }
+
+    @Override
+    public boolean isInvalid() {
+        if (destroyed) {
+            return true;
+        }
+        if (invalid) {
+            return true;
+        }
+
+        return !validate();
+    }
+
+    public void setInvalid() {
+        this.invalid = true;
     }
 }

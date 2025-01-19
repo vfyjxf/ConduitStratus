@@ -134,7 +134,7 @@ public final class TickDispatcher {
 
         this.tickingNetworks.updateNetworks();
         for (ConduitNetwork network : this.tickingNetworks.networks) {
-            for (var node : network.getNodes()) {
+            for (var node : network.getActiveNodes()) {
                 if (node.getLevel() == level) {
                     toDestroy.add(node);
                 }
