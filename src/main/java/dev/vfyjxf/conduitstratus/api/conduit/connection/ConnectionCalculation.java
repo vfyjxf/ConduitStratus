@@ -20,9 +20,12 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 
 public class ConnectionCalculation {
 
@@ -129,12 +132,12 @@ public class ConnectionCalculation {
     }
 
 
-    private static final int MAX_COLLECT_ITER_PER_TICK = 1000;
-    private static final int MAX_COMPUTE_ITER_PER_TICK = 10000;
+    private static final int MAX_COLLECT_ITER_PER_TICK = 500;
+    private static final int MAX_COMPUTE_ITER_PER_TICK = 1000;
 
 
     public ConnectionCalculation() {
-        final int MAX_CONNECTION_PARALLEL = Runtime.getRuntime().availableProcessors() + 1;
+        final int MAX_CONNECTION_PARALLEL = Runtime.getRuntime().availableProcessors();
         // 单线程先
         computingNodes = new ComputingNode[MAX_CONNECTION_PARALLEL];
         Thread[] computeThreads = new Thread[MAX_CONNECTION_PARALLEL];
@@ -217,13 +220,16 @@ public class ConnectionCalculation {
     }
 
     private void updateDistance(IncompleteNetwork network, FastNodeBFSIterator bfs) {
-        List<FastNodeBFSIterator.IterNode> nodes = bfs.getNodes();
+        var nodes = bfs.getNodes();
+
+
         if (nodes.isEmpty()) {
             return;
         }
 
 
-        CachedNode cache = network.getNode(nodes.getFirst().nodeId());
+        long packedFirst = nodes.getFirst();
+        CachedNode cache = network.getNode(FastNodeBFSIterator.unpackNodeId(packedFirst));
 
         short fromIndex = cache.getInternalId();
 
@@ -231,13 +237,13 @@ public class ConnectionCalculation {
             throw new IllegalStateException("Trying to update distance for a node that is not in network");
         }
 
-        for (int i = 1; i < nodes.size(); i++) {
-            FastNodeBFSIterator.IterNode iterNode = nodes.get(i);
-            short toIndex = iterNode.nodeId();
+        for(int i = 1; i < nodes.size(); i++){
+            long packed = nodes.get(i);
+            short toIndex = FastNodeBFSIterator.unpackNodeId(packed);
             if (toIndex == -1) {
                 throw new IllegalStateException("Trying to update distance for a node that is not in network");
             }
-            network.setDistance(fromIndex, toIndex, iterNode.distance());
+            network.setDistance(fromIndex, toIndex, FastNodeBFSIterator.unpackDistance(packed));
         }
     }
 
@@ -433,6 +439,9 @@ public class ConnectionCalculation {
                 return nodeId;
             }
 
+            Duration duration = Duration.between(network.getStartTime(), Instant.now());
+            log.info("Network {} with {} nodes computed in {} ms", network.uuid(), network.getNodes().size(), duration.toNanos() / 1_000_000.0);
+
             // current network is finished
             finishedNetworks.add(network);
             pendingNetworks.poll();
@@ -471,10 +480,8 @@ public class ConnectionCalculation {
                 if (iter >= MAX_COMPUTE_ITER_PER_TICK) {
                     return true;
                 }
-                if (iter % 1000 == 0) {
-                    if (network.isCancelled()) {
-                        break;
-                    }
+                if (network.isCancelled()) {
+                    break;
                 }
                 current.bfs().next();
                 iter++;

@@ -1,74 +1,76 @@
 package dev.vfyjxf.conduitstratus.api.conduit.connection;
 
-import it.unimi.dsi.fastutil.shorts.ShortArrayFIFOQueue;
-import it.unimi.dsi.fastutil.shorts.ShortSet;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Sets;
-import org.eclipse.collections.api.factory.primitive.ShortSets;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.set.MutableSet;
-import org.eclipse.collections.api.set.primitive.MutableShortSet;
+import dev.vfyjxf.conduitstratus.utils.FastBFSQueue;
+import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
+import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
+import org.eclipse.collections.api.list.primitive.IntList;
+import org.eclipse.collections.api.list.primitive.LongList;
+import org.eclipse.collections.api.list.primitive.MutableIntList;
+import org.eclipse.collections.api.list.primitive.MutableLongList;
+import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
+import org.eclipse.collections.impl.list.mutable.primitive.LongArrayList;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 @ApiStatus.Internal
 public class FastNodeBFSIterator {
-
-    public record IterNode(short nodeId, short fromId, short distance) {
-    }
-
     @FunctionalInterface
     public interface NeighborProvider {
         short[] getNeighbors(short nodeId);
     }
 
-    private final ArrayDeque<IterNode> queue = new ArrayDeque<>(32);
-    private final BitSet visited = new BitSet(Short.MAX_VALUE);
-    private final MutableList<IterNode> nodes = Lists.mutable.empty();
-    private final NeighborProvider neighborProvider;
-    private boolean hasInvalid;
-
-    public List<IterNode> getNodes() {
-        return nodes;
-    }
-
-    public boolean hasInvalid() {
-        return hasInvalid;
-    }
-
     public FastNodeBFSIterator(NeighborProvider neighborProvider, short start) {
         Objects.requireNonNull(neighborProvider);
         this.neighborProvider = neighborProvider;
-        IterNode startNode = new IterNode(start, (short) -1, (short) 0);
-        queue.offer(startNode);
+        int startNode = pack(start, (short) 0);
+        queue.enqueue(startNode);
+    }
+
+    public final FastBFSQueue queue = new FastBFSQueue(32);
+    private final BitSet visited = new BitSet(Short.MAX_VALUE);
+    private final MutableIntList nodes = new IntArrayList();
+    private final NeighborProvider neighborProvider;
+
+    public IntList getNodes() {
+        return nodes;
+    }
+
+    private static int pack(short nodeId, short distance) {
+        return ((distance & 0xFFFF) << 16) | (nodeId & 0xFFFF);
+    }
+
+    public static short unpackDistance(long packed) {
+        return (short) (packed >> 16);
+    }
+
+    public static short unpackNodeId(long packed) {
+        return (short) packed;
     }
 
     public boolean hasNext() {
-        return !queue.isEmpty();
+        return queue.notEmpty();
     }
 
     public boolean next() {
-        IterNode current = queue.poll();
-
-        if(current == null) {
-            throw new NoSuchElementException();
-        }
-
-        if(visited.get(current.nodeId)) {
+        int packed = queue.dequeue();
+        short currentId = unpackNodeId(packed);
+        if(visited.get(currentId)) {
             return true;
         }
-        visited.set(current.nodeId);
-        nodes.add(current);
+        visited.set(currentId);
+        short currentDistance = unpackDistance(packed);
+        nodes.add(packed);
 
-        short[] neighbors = neighborProvider.getNeighbors(current.nodeId);
+        short[] neighbors = neighborProvider.getNeighbors(currentId);
 
         for (short neighborId : neighbors) {
             if (visited.get(neighborId)) {
                 continue;
             }
-            IterNode neighbor = new IterNode(neighborId, current.nodeId, (short) (current.distance + 1));
-            queue.offer(neighbor);
+            int neighbor = pack(neighborId, (short) (currentDistance + 1));
+            queue.enqueue(neighbor);
         }
 
         return true;

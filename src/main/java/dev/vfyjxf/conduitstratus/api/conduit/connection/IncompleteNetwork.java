@@ -16,7 +16,7 @@ import org.eclipse.collections.api.multimap.MutableMultimap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Multimaps;
 import org.eclipse.collections.impl.utility.Iterate;
-
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -34,6 +34,11 @@ public class IncompleteNetwork {
     private CachedNode[] nodeMapping;
     private short[] distances;
     private boolean prepared = false;
+    private boolean computeStart = false;
+    private Instant startTime = null;
+    public Instant getStartTime() {
+        return startTime;
+    }
 
     public IncompleteNetwork() {
     }
@@ -64,6 +69,9 @@ public class IncompleteNetwork {
     }
 
     public CachedNode getNode(ConduitNodeId nodeId) {
+        if (computeStart) {
+            throw new IllegalStateException("Nodes have been released");
+        }
         return nodes.get(nodeId);
     }
 
@@ -110,6 +118,13 @@ public class IncompleteNetwork {
             nodeMapping[i] = node;
         }
 
+        prepared = true;
+    }
+
+    public void prepareInternalIds() {
+        if (!prepared) {
+            throw new IllegalStateException("Network is not prepared");
+        }
         for (int i = 0; i < nodeIdMapping.length; i++) {
             CachedNode node = nodeMapping[i];
             List<ConduitNodeId> neighbors = node.getNeighbors();
@@ -119,14 +134,17 @@ public class IncompleteNetwork {
             }
             node.setNeighborInternalIds(neighborInternalIds);
         }
-
-
-        prepared = true;
+        computeStart = true;
+        nodes.clear();
     }
 
     public short nextToBuild() {
         if (cancelled.get()) {
             return -1;
+        }
+        if (!computeStart) {
+            this.startTime = Instant.now();
+            prepareInternalIds();
         }
         if (buildIndex.get() >= nodeIdMapping.length - 1) {
             return -1;
@@ -167,6 +185,9 @@ public class IncompleteNetwork {
     }
 
     public short getNodeIdIndex(ConduitNodeId nodeId) {
+        if (computeStart) {
+            throw new IllegalStateException("Nodes have been released");
+        }
         var node = nodes.get(nodeId);
         if (node == null) {
             return -1;
