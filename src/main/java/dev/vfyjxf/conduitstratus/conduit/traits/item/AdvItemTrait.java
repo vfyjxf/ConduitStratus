@@ -14,8 +14,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public class AdvItemTrait extends ItemTransferTrait implements PoxyTrait<IItemHandler> {
 
-    public AdvItemTrait(TraitType type, NetworkNode holder, Direction direction, BlockCapability<? extends IItemHandler, @Nullable Direction> token) {
-        super(type, holder, direction, token);
+    public AdvItemTrait(TraitType type, NetworkNode holder, Direction direction) {
+        super(type, holder, direction);
     }
 
     @Override

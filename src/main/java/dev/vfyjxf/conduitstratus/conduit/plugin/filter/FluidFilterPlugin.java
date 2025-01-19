@@ -16,17 +16,17 @@ public class FluidFilterPlugin implements FilterPlugin<TransferTrait<ItemRequest
     }
 
     @Override
-    public void preHandle(ServerLevel level, TransferTrait<ItemRequest, ItemResponse> trait, NetworkChannels<TransferTrait<ItemRequest, ItemResponse>> channel) {
+    public void preHandle(ServerLevel level, TransferTrait<ItemRequest, ItemResponse> trait, NetworkChannels<TransferTrait<ItemRequest, ItemResponse>> channels) {
 
     }
 
     @Override
-    public void postHandle(ServerLevel level, TransferTrait<ItemRequest, ItemResponse> trait, NetworkChannels<TransferTrait<ItemRequest, ItemResponse>> channel) {
+    public void postHandle(ServerLevel level, TransferTrait<ItemRequest, ItemResponse> trait, NetworkChannels<TransferTrait<ItemRequest, ItemResponse>> channels) {
 
     }
 
     @Override
-    public void handle(ServerLevel level, TransferTrait<ItemRequest, ItemResponse> trait, NetworkChannels<TransferTrait<ItemRequest, ItemResponse>> channel) {
+    public void handle(ServerLevel level, TransferTrait<ItemRequest, ItemResponse> trait, NetworkChannels<TransferTrait<ItemRequest, ItemResponse>> channels) {
 
     }
 }

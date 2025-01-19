@@ -2,12 +2,17 @@ package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
 import dev.vfyjxf.cloudlib.api.data.DataContainer;
 import dev.vfyjxf.cloudlib.api.event.EventChannel;
+import dev.vfyjxf.conduitstratus.api.conduit.TickStatus;
 import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.event.TraitEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.network.ChannelColor;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.utils.Checks;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,12 +21,12 @@ public abstract class BasicTrait<C extends TraitConnection> implements Trait {
     protected final TraitType type;
     protected final NetworkNode holder;
     protected final Direction direction;
-    protected final EventChannel<TraitEvent> eventChannel = EventChannel.create(this);
+    protected final EventChannel<TraitEvent> events = EventChannel.create(this);
     protected final DataContainer dataContainer = new DataContainer();
     @NotNull
     protected TraitIO io = TraitIO.NONE;
     protected ChannelColor channelColor = ChannelColor.RED;
-    protected TraitStatus status = null;
+    protected TickStatus status = new TickStatus(20, 20).sleep();
     @Nullable
     protected C connection;
     protected int priority = 0;
@@ -44,12 +49,12 @@ public abstract class BasicTrait<C extends TraitConnection> implements Trait {
     }
 
     @Override
-    public TraitStatus getStatus() {
+    public TickStatus getStatus() {
         return status;
     }
 
     @Override
-    public BasicTrait<C> setStatus(TraitStatus status) {
+    public BasicTrait<C> setStatus(TickStatus status) {
         this.status = status;
         return this;
     }
@@ -87,7 +92,7 @@ public abstract class BasicTrait<C extends TraitConnection> implements Trait {
     }
 
     @Override
-    public Trait setIO(TraitIO traitIO) {
+    public BasicTrait<C> setIO(TraitIO traitIO) {
         this.io = traitIO;
         return this;
     }
@@ -99,7 +104,7 @@ public abstract class BasicTrait<C extends TraitConnection> implements Trait {
 
     @Override
     public EventChannel<TraitEvent> events() {
-        return eventChannel;
+        return events;
     }
 
     @Override
@@ -110,4 +115,18 @@ public abstract class BasicTrait<C extends TraitConnection> implements Trait {
     public void setConnection(@Nullable C connection) {
         this.connection = connection;
     }
+
+
+    @Override
+    @MustBeInvokedByOverriders
+    public void saveData(CompoundTag tag, HolderLookup.Provider registries) {
+        tag.put("type", TraitType.CODEC.encodeStart(NbtOps.INSTANCE, this.type).getOrThrow());
+    }
+
+    @Override
+    @MustBeInvokedByOverriders
+    public void loadData(CompoundTag tag, HolderLookup.Provider registries) {
+
+    }
+
 }

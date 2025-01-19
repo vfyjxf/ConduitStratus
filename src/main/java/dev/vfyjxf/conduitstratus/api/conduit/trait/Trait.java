@@ -5,6 +5,7 @@ import dev.vfyjxf.cloudlib.api.data.DataAttachable;
 import dev.vfyjxf.cloudlib.api.event.EventHandler;
 import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
+import dev.vfyjxf.conduitstratus.api.conduit.TickStatus;
 import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.event.TraitEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.network.ChannelColor;
@@ -38,13 +39,13 @@ public interface Trait extends EventHandler<TraitEvent>, DataAttachable {
 
     NetworkNode getNode();
 
-    TraitStatus getStatus();
+    TickStatus getStatus();
 
     String identifier();
 
     @CanIgnoreReturnValue
     @Contract("_ -> this")
-    Trait setStatus(TraitStatus status);
+    Trait setStatus(TickStatus status);
 
     default boolean sleeping() {
         return getStatus().sleeping();
@@ -84,14 +85,10 @@ public interface Trait extends EventHandler<TraitEvent>, DataAttachable {
     Trait setPriority(@Range(from = 0, to = Integer.MAX_VALUE) int priority);
 
     @MustBeInvokedByOverriders
-    default void saveData(CompoundTag tag, HolderLookup.Provider registries) {
-        tag.putString("io", getIO().toString());
-    }
+    void saveData(CompoundTag tag, HolderLookup.Provider registries);
 
     @MustBeInvokedByOverriders
-    default void loadData(CompoundTag tag, HolderLookup.Provider registries) {
-
-    }
+    void loadData(CompoundTag tag, HolderLookup.Provider registries);
 
     /**
      * @param traitIO the io
@@ -120,11 +117,11 @@ public interface Trait extends EventHandler<TraitEvent>, DataAttachable {
     @Nullable
     TraitConnection getConnection();
 
-    default boolean injectable() {
+    default boolean importable() {
         return getIO().input() && getConnection() != null;
     }
 
-    default boolean extractable() {
+    default boolean exportable() {
         return getIO().output() && getConnection() != null;
     }
 
@@ -142,6 +139,12 @@ public interface Trait extends EventHandler<TraitEvent>, DataAttachable {
         if (connection != null) {
             connection.destroy();
         }
+    }
+
+    default void preTick() {
+    }
+
+    default void postTick() {
     }
 
 }

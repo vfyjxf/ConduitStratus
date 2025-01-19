@@ -1,6 +1,7 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
 import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
+import dev.vfyjxf.conduitstratus.api.conduit.TickStatus;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.capabilities.BlockCapability;
@@ -23,7 +24,7 @@ public abstract class BasicCapabilityTrait<CAP>
     }
 
     @Override
-    public BasicCapabilityTrait<CAP> setStatus(TraitStatus status) {
+    public BasicCapabilityTrait<CAP> setStatus(TickStatus status) {
         super.setStatus(status);
         return this;
     }

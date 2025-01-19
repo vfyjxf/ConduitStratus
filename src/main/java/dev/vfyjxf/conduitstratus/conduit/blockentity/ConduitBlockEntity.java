@@ -120,7 +120,7 @@ public class ConduitBlockEntity extends NetworkBlockEntity implements ConduitNod
     public void addTrait(TraitType type, Direction side) {
         var node = getNode();
         if (node != null) {
-            node.addTrait(side, type.getFactory().create(type, node, side));
+            node.addTrait(side, type.factory().create(type, node, side));
         }
         connectionState.addTrait(side);
         markForUpdate();
