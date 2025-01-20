@@ -202,7 +202,7 @@ public abstract class NetworkBlockEntity extends BlockEntity implements ConduitN
         for (var neighbor : this.remoteNodes) {
             ConduitNode neighborNode = this.findNodeAt(neighbor);
             if (neighborNode != null) {
-                neighborNode.refreshRemote();
+                neighborNode.onRemoteChanged();
             }
         }
 
@@ -239,11 +239,16 @@ public abstract class NetworkBlockEntity extends BlockEntity implements ConduitN
     }
 
     @Override
+    public void onRemoteChanged() {
+        refreshRemote();
+    }
+
+    @Override
     public boolean refreshRemote() {
         MutableList<ConduitNodeId> remoteNodes = Lists.mutable.empty();
+        boolean addded = false;
+        MutableSet<ConduitNodeId> newNodes = Sets.mutable.empty();
         if (collectRemoteNodes(remoteNodes)) {
-            boolean addded = false;
-            MutableSet<ConduitNodeId> newNodes = Sets.mutable.empty();
             for (ConduitNodeId remote : remoteNodes) {
                 ConduitNode neighborNode = this.findNodeAt(remote);
                 if (neighborNode == null || !neighborNode.acceptsRemote(this.conduitId())) {
@@ -254,13 +259,13 @@ public abstract class NetworkBlockEntity extends BlockEntity implements ConduitN
                 }
                 newNodes.add(remote);
             }
+        }
 
-            if (addded || this.remoteNodes.size() != newNodes.size()) {
-                this.remoteNodes.clear();
-                this.remoteNodes.addAll(newNodes);
-                scheduleNetwork(1);
-                return true;
-            }
+        if (addded || this.remoteNodes.size() != newNodes.size()) {
+            this.remoteNodes.clear();
+            this.remoteNodes.addAll(newNodes);
+            scheduleNetwork(1);
+            return true;
         }
 
         return false;
@@ -340,7 +345,7 @@ public abstract class NetworkBlockEntity extends BlockEntity implements ConduitN
             for (var neighbor : this.remoteNodes) {
                 ConduitNode neighborNode = this.findNodeAt(neighbor);
                 if (neighborNode != null) {
-                    neighborNode.refreshRemote();
+                    neighborNode.onRemoteChanged();
                 }
             }
 
