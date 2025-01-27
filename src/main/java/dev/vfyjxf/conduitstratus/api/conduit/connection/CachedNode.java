@@ -1,7 +1,10 @@
 package dev.vfyjxf.conduitstratus.api.conduit.connection;
 
+import org.jetbrains.annotations.ApiStatus;
+
 import java.util.List;
 
+@ApiStatus.Internal
 public class CachedNode {
     private final ConduitNodeId id;
     private final List<ConduitNodeId> neighbors;

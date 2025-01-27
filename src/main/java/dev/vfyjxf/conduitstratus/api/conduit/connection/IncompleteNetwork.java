@@ -23,6 +23,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Multimaps;
 import org.eclipse.collections.impl.list.fixed.ArrayAdapter;
 import org.eclipse.collections.impl.utility.Iterate;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
@@ -31,6 +32,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@ApiStatus.Internal
 public class IncompleteNetwork implements BaseNetwork {
     private final AtomicInteger buildIndex = new AtomicInteger(1);
     private final MutableMap<ConduitNodeId, CachedNode> nodes = Maps.mutable.empty();
@@ -177,7 +179,7 @@ public class IncompleteNetwork implements BaseNetwork {
 
         if (nodes.size() > Short.MAX_VALUE) {
 
-            for(var nodeId : nodes.keysView()) {
+            for (var nodeId : nodes.keysView()) {
                 var level = server.getLevel(nodeId.dimension());
                 if (level == null) {
                     continue;

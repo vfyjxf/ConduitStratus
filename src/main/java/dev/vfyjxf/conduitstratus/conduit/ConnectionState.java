@@ -3,6 +3,7 @@ package dev.vfyjxf.conduitstratus.conduit;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 
+import java.util.Collection;
 import java.util.EnumSet;
 
 public class ConnectionState {
@@ -39,7 +40,7 @@ public class ConnectionState {
         return traitConnections;
     }
 
-    public void setTraitConnections(EnumSet<Direction> traitConnections) {
+    public void setTraitConnections(Collection<Direction> traitConnections) {
         this.traitConnections.clear();
         this.traitConnections.addAll(traitConnections);
     }
@@ -52,7 +53,7 @@ public class ConnectionState {
         return traitConnections.contains(dir);
     }
 
-    public void setConnections(EnumSet<Direction> connections) {
+    public void setConnections(Collection<Direction> connections) {
         conduitConnections.clear();
         conduitConnections.addAll(connections);
     }

@@ -63,7 +63,9 @@ public class ConduitBlock extends Block implements EntityBlock, SimpleWaterlogge
             BlockPos neighborPos
     ) {
         if (level.getBlockEntity(pos) instanceof ConduitBlockEntity conduitBlockEntity) {
-            conduitBlockEntity.refreshNeighbor();
+            if (conduitBlockEntity.conduitNode() != null) {
+                conduitBlockEntity.conduitNode().refreshNeighbor();
+            }
         }
         return super.updateShape(oldState, direction, neighborState, level, pos, neighborPos);
     }
@@ -74,7 +76,9 @@ public class ConduitBlock extends Block implements EntityBlock, SimpleWaterlogge
         if (!level.isClientSide) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof ConduitBlockEntity conduitBlockEntity) {
-                conduitBlockEntity.refreshNeighbor();
+                if (conduitBlockEntity.conduitNode() != null) {
+                    conduitBlockEntity.conduitNode().refreshNeighbor();
+                }
             }
         }
     }
@@ -84,7 +88,9 @@ public class ConduitBlock extends Block implements EntityBlock, SimpleWaterlogge
 
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof ConduitBlockEntity conduitBlockEntity) {
-            conduitBlockEntity.onDestroyed();
+            if (conduitBlockEntity.conduitNode() != null) {
+                conduitBlockEntity.conduitNode().removeFromLevel();
+            }
         }
         super.onRemove(state, level, pos, newState, movedByPiston);
     }

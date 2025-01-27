@@ -193,7 +193,7 @@ public final class ConduitNetwork implements Network {
     @Override
     public void destroy() {
         for (ConduitNetworkNode node : activeNodes.values()) {
-            node.onNetworkDestroy();
+            node.destroy(false);
         }
         destroyed = true;
         activeNodes.clear();

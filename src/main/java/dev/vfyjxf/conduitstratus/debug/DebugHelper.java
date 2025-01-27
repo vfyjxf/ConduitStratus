@@ -1,6 +1,7 @@
 package dev.vfyjxf.conduitstratus.debug;
 
 import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitDistance;
+import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNode;
 import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNodeId;
 import dev.vfyjxf.conduitstratus.api.conduit.network.BaseNetwork;
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
@@ -58,14 +59,15 @@ public class DebugHelper {
             return;
         }
 
-        BaseNetwork baseNetwork = conduitBlockEntity.getNetwork();
+        ConduitNode conduitNode = conduitBlockEntity.conduitNode();
+        BaseNetwork baseNetwork = conduitNode.getNetwork();
         if (!(baseNetwork instanceof Network network)) {
             return;
         }
 
         ConduitDistance distance = network.getDistance();
 
-        ConduitNodeId fromId = conduitBlockEntity.conduitId();
+        ConduitNodeId fromId = conduitNode.conduitId();
 
         List<DebugPackage.Entry> entries = new ArrayList<>();
 

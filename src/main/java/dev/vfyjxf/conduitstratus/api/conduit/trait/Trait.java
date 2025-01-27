@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Range;
  */
 //TODO:Plugin System
 //TODO:Add identifier
+//TODO:Make Trait be a node attachment
 public interface Trait extends EventHandler<TraitEvent>, DataAttachable {
 
     TraitType getType();
@@ -55,7 +56,7 @@ public interface Trait extends EventHandler<TraitEvent>, DataAttachable {
     }
 
     default Network getNetwork() {
-        return getNode().getNetwork();
+        return getNode().getEffectiveNetwork();
     }
 
     default ServerLevel getLevel() {

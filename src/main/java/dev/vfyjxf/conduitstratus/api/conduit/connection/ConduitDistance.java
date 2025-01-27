@@ -1,8 +1,6 @@
 package dev.vfyjxf.conduitstratus.api.conduit.connection;
 
 import it.unimi.dsi.fastutil.objects.Object2ShortMap;
-import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.list.ImmutableList;
 
 public class ConduitDistance {
     private final short[] distances;

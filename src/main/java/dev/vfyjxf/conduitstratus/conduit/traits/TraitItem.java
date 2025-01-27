@@ -31,7 +31,9 @@ public class TraitItem extends Item {
         if (traitType == null) return InteractionResult.PASS;
         if (level.getBlockEntity(pos) instanceof ConduitBlockEntity blockEntity) {
             if (!blockEntity.getConnectionState().hasConnection(side)) {
-                blockEntity.addTrait(traitType, side);
+                var networkNode = blockEntity.networkNode();
+                if (networkNode == null) return InteractionResult.PASS;
+                networkNode.addTrait(side, type.getFactory().create(type, networkNode, side));
                 var state = level.getBlockState(pos);
                 var ss = state.getSoundType(level, pos, player);
                 level.playSound(null, pos, ss.getPlaceSound(), SoundSource.BLOCKS, (ss.getVolume() + 1.0F) / 2.0F,
