@@ -1,9 +1,9 @@
 package dev.vfyjxf.conduitstratus.blockentity;
 
-import dev.vfyjxf.conduitstratus.api.conduit.network.InitNetworkNode;
-import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
-import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkBuilder;
+import dev.vfyjxf.conduitstratus.api.conduit.ConduitEntity;
+import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNode;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
+import dev.vfyjxf.conduitstratus.conduit.network.ConduitNetworkNode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -11,28 +11,34 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public abstract class NetworkBlockEntity extends BlockEntity {
+public abstract class NetworkBlockEntity extends BlockEntity implements ConduitEntity {
 
-    protected final InitNetworkNode networkNode = NetworkBuilder.createInitNetworkNode(this);
+    private static final Logger log = LoggerFactory.getLogger(NetworkBlockEntity.class);
+
+    private ConduitNetworkNode networkNode = new ConduitNetworkNode(this);
 
     public NetworkBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         super(type, pos, blockState);
     }
 
-    public final InitNetworkNode getNetworkNode() {
+    @Nullable
+    @Contract(pure = true)
+    public ConduitNode conduitNode() {
         return networkNode;
     }
 
-    public @Nullable Network getNetwork() {
-        return networkNode.getNetwork();
+    @Nullable
+    @Contract(pure = true)
+    public NetworkNode networkNode() {
+        return networkNode;
     }
 
-    public @Nullable NetworkNode getNode() {
-        return networkNode.getNode();
-    }
-
+    @Override
     public void markForUpdate() {
         this.requestModelDataUpdate();
 
@@ -47,6 +53,7 @@ public abstract class NetworkBlockEntity extends BlockEntity {
         }
     }
 
+    @Override
     public void markForSave() {
         if (this.level == null) {
             return;
@@ -64,13 +71,17 @@ public abstract class NetworkBlockEntity extends BlockEntity {
     @Override
     public void setRemoved() {
         super.setRemoved();
-        this.networkNode.destroy();
+        if (networkNode != null) {
+            this.networkNode.destroy(true);
+        }
     }
 
     @Override
     public void onChunkUnloaded() {
         super.onChunkUnloaded();
-        this.networkNode.destroy();
+        if (networkNode != null) {
+            this.networkNode.destroy(false);
+        }
     }
 
     public final boolean isLoaded() {
@@ -78,7 +89,27 @@ public abstract class NetworkBlockEntity extends BlockEntity {
     }
 
     @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        if (networkNode != null) {
+            networkNode.saveData(tag, registries);
+        }
+    }
+
+    @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        if (networkNode != null) {
+            networkNode.loadData(tag, registries);
+        }
     }
+
+    @Override
+    public void clearRemoved() {
+        super.clearRemoved();
+        if (level.isClientSide) {
+            this.networkNode = null;
+        }
+    }
+
 }

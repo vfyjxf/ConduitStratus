@@ -37,7 +37,7 @@ public class ConduitNetworkData<T> implements NetworkData<T> {
 
     @Override
     public void set(T value) {
-        Network network = this.node.getNetwork();
+        Network network = this.node.getEffectiveNetwork();
         var context = network.common();
         network.listeners(NetworkEvent.onDataUpdate).onNetworkDataUpdate(node, this, context);
         if (context.cancelled()) return;

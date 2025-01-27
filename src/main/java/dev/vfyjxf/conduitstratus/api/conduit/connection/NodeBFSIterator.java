@@ -1,12 +1,12 @@
 package dev.vfyjxf.conduitstratus.api.conduit.connection;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.set.MutableSet;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.util.*;
 
 @ApiStatus.Internal
 public class NodeBFSIterator {
@@ -23,14 +23,14 @@ public class NodeBFSIterator {
         List<ConduitNodeId> getNeighbors(ConduitNodeId nodeId);
     }
 
-    private final ArrayList<IterNode> queue = new ArrayList<>();
-    private final HashSet<ConduitNodeId> visited = new HashSet<>();
+    private final ArrayDeque<IterNode> queue = new ArrayDeque<>();
+    private final MutableSet<ConduitNodeId> visited = Sets.mutable.empty();
+    private final MutableList<IterNode> nodes = Lists.mutable.empty();
     private final NeighborProvider neighborProvider;
-    private int index;
     private boolean hasInvalid;
 
     public List<IterNode> getNodes() {
-        return queue;
+        return nodes;
     }
 
     public boolean hasInvalid() {
@@ -48,16 +48,21 @@ public class NodeBFSIterator {
     }
 
     public boolean hasNext() {
-        return index < queue.size();
+        return !queue.isEmpty();
     }
 
     public boolean next() {
-        if (!hasNext()) {
+        IterNode current = queue.poll();
+
+        if(current == null) {
             throw new NoSuchElementException();
         }
 
-        IterNode current = queue.get(index++);
+        if(visited.contains(current.nodeId)) {
+            return true;
+        }
         visited.add(current.nodeId);
+        nodes.add(current);
 
         List<ConduitNodeId> neighbors = neighborProvider.getNeighbors(current.nodeId);
 
@@ -75,7 +80,7 @@ public class NodeBFSIterator {
             neighbor.nodeId = neighborId;
             neighbor.fromId = current.nodeId;
             neighbor.distance = current.distance + 1;
-            queue.add(neighbor);
+            queue.offer(neighbor);
         }
 
         return true;

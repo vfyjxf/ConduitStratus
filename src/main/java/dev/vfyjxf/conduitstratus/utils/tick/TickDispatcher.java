@@ -14,6 +14,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.apache.commons.lang3.tuple.Pair;
@@ -37,7 +38,6 @@ public final class TickDispatcher {
 
     private final TickingNetworks tickingNetworks = new TickingNetworks();
     private final InitBlockEntities initBlockEntities = new InitBlockEntities();
-    private final TickTasks tickTasks = new TickTasks();
     private long currentTick = 0;
 
     public long currentTick() {
@@ -59,10 +59,6 @@ public final class TickDispatcher {
         }
     }
 
-    public void addTaskToNextTick(Runnable task) {
-        tickTasks.toAdd.add(task);
-    }
-
     public void init() {
         NeoForge.EVENT_BUS.addListener(this::onServerTickPre);
         NeoForge.EVENT_BUS.addListener(this::onServerTickPost);
@@ -70,6 +66,9 @@ public final class TickDispatcher {
         NeoForge.EVENT_BUS.addListener(this::onServerLevelTickPost);
         NeoForge.EVENT_BUS.addListener(this::onUnloadChunk);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onUnloadLevel);
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> {
+            stop();
+        });
     }
 
     public void stop() {
@@ -134,7 +133,7 @@ public final class TickDispatcher {
 
         this.tickingNetworks.updateNetworks();
         for (ConduitNetwork network : this.tickingNetworks.networks) {
-            for (var node : network.getNodes()) {
+            for (var node : network.getActiveNodes()) {
                 if (node.getLevel() == level) {
                     toDestroy.add(node);
                 }
@@ -142,7 +141,7 @@ public final class TickDispatcher {
         }
 
         for (ConduitNetworkNode node : toDestroy) {
-            node.destroy();
+            node.destroy(true);
         }
 
         this.initBlockEntities.removeLevel(level);
@@ -219,19 +218,6 @@ public final class TickDispatcher {
 
         Long2ObjectMap<MutableList<Pair<BlockEntity, Runnable>>> getInitEntities(LevelAccessor level) {
             return initQueue.get(level);
-        }
-    }
-
-    private static class TickTasks {
-        private final MutableList<Runnable> tasks = Lists.mutable.empty();
-        private final MutableList<Runnable> toAdd = Lists.mutable.empty();
-
-        public void update() {
-            if (!toAdd.isEmpty()) {
-                tasks.clear();
-                tasks.addAll(toAdd);
-                toAdd.clear();
-            }
         }
     }
 

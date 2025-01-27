@@ -54,7 +54,6 @@ public final class ModValues {
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
 
 
-
     //////////////////////////
     //        Items          /
     //////////////////////////

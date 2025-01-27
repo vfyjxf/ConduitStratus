@@ -3,6 +3,7 @@ package dev.vfyjxf.conduitstratus.conduit;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 
+import java.util.Collection;
 import java.util.EnumSet;
 
 public class ConnectionState {
@@ -39,7 +40,7 @@ public class ConnectionState {
         return traitConnections;
     }
 
-    public void setTraitConnections(EnumSet<Direction> traitConnections) {
+    public void setTraitConnections(Collection<Direction> traitConnections) {
         this.traitConnections.clear();
         this.traitConnections.addAll(traitConnections);
     }
@@ -52,7 +53,7 @@ public class ConnectionState {
         return traitConnections.contains(dir);
     }
 
-    public void setConnections(EnumSet<Direction> connections) {
+    public void setConnections(Collection<Direction> connections) {
         conduitConnections.clear();
         conduitConnections.addAll(connections);
     }
@@ -78,18 +79,22 @@ public class ConnectionState {
         return conduitConnections.iterator().next();
     }
 
-    public CompoundTag writeToTag(CompoundTag tag) {
-        tag.putIntArray("conduitConnections", conduitConnections.stream().mapToInt(Direction::get3DDataValue).toArray());
+    public CompoundTag writeToTag(CompoundTag tag, boolean saveConduitConnections) {
+        if (saveConduitConnections) {
+            tag.putIntArray("conduitConnections", conduitConnections.stream().mapToInt(Direction::get3DDataValue).toArray());
+        }
         tag.putIntArray("traitConnections", traitConnections.stream().mapToInt(Direction::get3DDataValue).toArray());
         return tag;
     }
 
     public void fromTag(CompoundTag tag) {
-        conduitConnections.clear();
-        traitConnections.clear();
-        for (int i : tag.getIntArray("conduitConnections")) {
-            conduitConnections.add(Direction.from3DDataValue(i));
+        if (tag.contains("conduitConnections")) {
+            conduitConnections.clear();
+            for (int i : tag.getIntArray("conduitConnections")) {
+                conduitConnections.add(Direction.from3DDataValue(i));
+            }
         }
+        traitConnections.clear();
         for (int i : tag.getIntArray("traitConnections")) {
             traitConnections.add(Direction.from3DDataValue(i));
         }

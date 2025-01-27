@@ -1,24 +1,59 @@
 package dev.vfyjxf.conduitstratus.api.conduit.connection;
 
-import dev.vfyjxf.conduitstratus.conduit.network.NetworkHolder;
+import dev.vfyjxf.conduitstratus.conduit.network.BaseNetworkHolder;
+import net.minecraft.core.Direction;
+import org.jetbrains.annotations.ApiStatus;
 
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 
-public interface ConduitNode extends NetworkHolder {
+//参与路径计算和连接的节点
+public interface ConduitNode extends BaseNetworkHolder {
     // 导管的位置和坐标
     ConduitNodeId conduitId();
+
     // 直接连接的管道，必须保证是双向的
-    List<ConduitNodeId> neighbors();
+    List<ConduitNodeId> adjacentNodes();
 
-    // 是否有效，连接的时候识别到无效节点会造成连接失败，并对连接的节点调用 setValid(false)
-    boolean valid();
+    Collection<Direction> connectedDirections();
 
-    // 是否正在初始化，会在初始化的时候推迟连接
-    boolean initializing();
+    // 是否接受远程连接，需要保证双向连接
+    boolean acceptsRemote(ConduitNodeId remote);
 
-    // 设置节点是否有效，无效节点会被标记并通知更新
-    void setValid(boolean valid);
+    // 是否接受邻居连接，需要保证双向连接
+    boolean acceptsNeighbor(Direction direction);
 
-    // 刷新节点，在连接到的节点更新的时候会调用，触发节点刷新自身的连接
-    void refresh();
+    // 当前节点从世界中删除
+    void removeFromLevel();
+
+    // 远程连接发生变化
+    void onRemoteChanged();
+
+    // 刷新远程连接
+    boolean refreshRemote();
+
+    // 刷新本地连接
+    boolean refreshNeighbor();
+
+    /**
+     * @return 节点是否联网, 即节点是否属于一个有效的的网络
+     */
+    boolean online();
+
+    default boolean offline() {
+        return !online();
+    }
+
+    // 节点是否有效，即当前的管道连接目标是否仍然存在
+    boolean isInvalid();
+
+    @ApiStatus.Internal
+    boolean validate();
+
+    // 在指定延迟后刷新当前节点的网络
+    void scheduleNetwork(int delay);
+
+    // called when the network is tool large
+    void setInvalid();
 }
