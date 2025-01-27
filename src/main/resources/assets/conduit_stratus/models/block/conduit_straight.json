@@ -2,8 +2,8 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [32, 32],
 	"textures": {
-		"particle": "conduit_stratus:block/staright_sides",
-		"staright_sides": "conduit_stratus:block/staright_sides"
+		"particle": "conduit_stratus:block/straight_sides",
+		"straight_sides": "conduit_stratus:block/straight_sides"
 	},
 	"elements": [
 		{
@@ -11,12 +11,12 @@
 			"to": [11, 11, 16],
 			"rotation": {"angle": 0, "axis": "y", "origin": [10, 37, 3]},
 			"faces": {
-				"north": {"uv": [6, 3, 9, 6], "texture": "#staright_sides"},
-				"east": {"uv": [0, 0, 8, 3], "texture": "#staright_sides"},
-				"south": {"uv": [6, 3, 9, 6], "texture": "#staright_sides"},
-				"west": {"uv": [0, 0, 8, 3], "texture": "#staright_sides"},
-				"up": {"uv": [3, 11, 0, 3], "texture": "#staright_sides"},
-				"down": {"uv": [6, 3, 3, 11], "texture": "#staright_sides"}
+				"north": {"uv": [6, 3, 9, 6], "texture": "#straight_sides"},
+				"east": {"uv": [0, 0, 8, 3], "texture": "#straight_sides"},
+				"south": {"uv": [6, 3, 9, 6], "texture": "#straight_sides"},
+				"west": {"uv": [0, 0, 8, 3], "texture": "#straight_sides"},
+				"up": {"uv": [3, 11, 0, 3], "texture": "#straight_sides"},
+				"down": {"uv": [6, 3, 3, 11], "texture": "#straight_sides"}
 			}
 		}
 	]

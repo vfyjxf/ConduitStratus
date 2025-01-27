@@ -9,24 +9,24 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-public class FluidFilterPlugin implements FilterPlugin<TransferTrait<ItemRequest, ItemResponse>, ItemStack,Void> {
+public class FluidFilterPlugin implements FilterPlugin<TransferTrait<ItemRequest, ItemResponse>, ItemStack, Void> {
     @Override
     public boolean apply(TransferTrait<ItemRequest, ItemResponse> trait, ItemStack stack, @Nullable Void unused) {
         return false;
     }
 
     @Override
-    public void preHandle(ServerLevel level, TransferTrait<ItemRequest, ItemResponse> trait, NetworkChannels<TransferTrait<ItemRequest, ItemResponse>> channel) {
+    public void preHandle(ServerLevel level, TransferTrait<ItemRequest, ItemResponse> trait, NetworkChannels<TransferTrait<ItemRequest, ItemResponse>> channels) {
 
     }
 
     @Override
-    public void postHandle(ServerLevel level, TransferTrait<ItemRequest, ItemResponse> trait, NetworkChannels<TransferTrait<ItemRequest, ItemResponse>> channel) {
+    public void postHandle(ServerLevel level, TransferTrait<ItemRequest, ItemResponse> trait, NetworkChannels<TransferTrait<ItemRequest, ItemResponse>> channels) {
 
     }
 
     @Override
-    public void handle(ServerLevel level, TransferTrait<ItemRequest, ItemResponse> trait, NetworkChannels<TransferTrait<ItemRequest, ItemResponse>> channel) {
+    public void handle(ServerLevel level, TransferTrait<ItemRequest, ItemResponse> trait, NetworkChannels<TransferTrait<ItemRequest, ItemResponse>> channels) {
 
     }
 }

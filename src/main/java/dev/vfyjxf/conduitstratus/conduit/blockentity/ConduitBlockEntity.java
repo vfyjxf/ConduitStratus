@@ -2,14 +2,12 @@ package dev.vfyjxf.conduitstratus.conduit.blockentity;
 
 import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkBuilder;
-import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
 import dev.vfyjxf.conduitstratus.blockentity.NetworkBlockEntity;
 import dev.vfyjxf.conduitstratus.client.models.ModelProperties;
-import dev.vfyjxf.conduitstratus.conduit.ConduitConnections;
+import dev.vfyjxf.conduitstratus.conduit.ConnectionState;
 import dev.vfyjxf.conduitstratus.conduit.block.ConduitShapes;
 import dev.vfyjxf.conduitstratus.init.values.ModValues;
-import dev.vfyjxf.conduitstratus.utils.EnumConstant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -17,31 +15,38 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.ICapabilityProvider;
 import net.neoforged.neoforge.client.model.data.ModelData;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.EnumSet;
 
+
 public class ConduitBlockEntity extends NetworkBlockEntity {
 
+    private static final Logger logger = LoggerFactory.getLogger("ConduitStratus-ConduitBlockEntity");
     private Conduit conduit;
     private final EnumSet<Direction> rejectDirections = EnumSet.noneOf(Direction.class);
-    private final ConduitConnections connections = new ConduitConnections();
+    private final ConnectionState connectionState = new ConnectionState();
+
 
     public ConduitBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModValues.conduitBlockEntity.get(), pos, blockState);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T, C> ICapabilityProvider<? extends ConduitBlockEntity, C, T> getCapabilityProvider(BlockCapability<T, C> capability) {
         return ((be, context) -> {
-            var node = be.networkNode.getNode();
+            if (capability == ModValues.CONDUIT_NODE_CAP) {
+                return (T) be.conduitNode();
+            }
+            var node = be.networkNode();
             if (node != null) {
                 return node.poxyCapability(capability, context);
             }
@@ -50,12 +55,24 @@ public class ConduitBlockEntity extends NetworkBlockEntity {
 
     }
 
+    @Override
+    public BlockEntity getBlockEntity() {
+        return this;
+    }
+
+    @Override
     public Conduit getConduit() {
         return conduit;
     }
 
+    @Override
     public void setConduit(Conduit conduit) {
         this.conduit = conduit;
+    }
+
+    @Override
+    public boolean acceptsNeighbor(Direction direction) {
+        return !rejectDirections.contains(direction) && !connectionState.hasTrait(direction);
     }
 
     public void addRejectDirection(Direction direction) {
@@ -71,53 +88,37 @@ public class ConduitBlockEntity extends NetworkBlockEntity {
     }
 
     public VoxelShape getShape() {
-        return ConduitShapes.getShape(connections);
+        return ConduitShapes.getShape(connectionState);
     }
 
     @Override
     public ModelData getModelData() {
         return ModelData.builder()
-                .with(ModelProperties.CONDUIT_CONNECTION, connections)
+                .with(ModelProperties.CONDUIT_CONNECTION, connectionState)
                 .build();
     }
 
-
-    @ApiStatus.Internal
-    public void updateConnections() {
-        resetConnection();
-        setChanged();
-    }
-
-    public ConduitConnections getConnections() {
-        return connections;
-    }
-
-    public void addTrait(TraitType type, Direction side) {
-        var node = getNode();
-        if (node != null) {
-            node.addTrait(side, type.getFactory().create(type, node, side));
+    public void updateConnectionState() {
+        if (conduitNode() != null) {
+            connectionState.setConnections(conduitNode().connectedDirections());
         }
-        connections.addTrait(side);
+    }
+
+    @Override
+    public void connectionChange() {
+        updateConnectionState();
         markForUpdate();
         markForSave();
     }
 
-    //todo:impl reject direction feature
-    private void resetConnection() {
-        EnumSet<Direction> updated = EnumSet.noneOf(Direction.class);
-        for (Direction direction : EnumConstant.directions) {
-            if (rejectDirections.contains(direction) || connections.hasTrait(direction)) continue;
-            BlockPos pos = this.getBlockPos().relative(direction);
-            BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof ConduitBlockEntity conduitBlockEntity) {
-                Direction opposite = direction.getOpposite();
-                if (conduitBlockEntity.isDirectionRejected(opposite) || conduitBlockEntity.connections.hasTrait(opposite)) {
-                    continue;
-                }
-                updated.add(direction);
-            }
-        }
-        connections.setConnections(updated);
+    public ConnectionState getConnectionState() {
+        return connectionState;
+    }
+
+    public void addTrait(TraitType type, Direction side) {
+        connectionState.addTrait(side);
+        markForUpdate();
+        markForSave();
     }
 
     @Override
@@ -127,52 +128,50 @@ public class ConduitBlockEntity extends NetworkBlockEntity {
 
     @Override
     public CompoundTag getUpdateTag(final HolderLookup.Provider provider) {
-        NetworkNode node = getNode();
-        if (node != null) {
+        return connectionState.writeToTag(new CompoundTag(), true);
+    }
 
-        }
-        return connections.writeToTag(new CompoundTag());
+
+    @Override
+    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+        super.saveAdditional(tag, registries);
+        connectionState.writeToTag(tag, false);
+        tag.putIntArray("rejectDirections", rejectDirections.stream().mapToInt(Direction::get3DDataValue).toArray());
     }
 
     @Override
     protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.loadAdditional(tag, registries);
-        networkNode.loadData(tag);
-        connections.fromTag(tag);
-        if (level != null) {
-            requestModelDataUpdate();
-            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
+        connectionState.fromTag(tag);
+        if (!tag.contains("conduitConnections")) {
+            updateConnectionState();
         }
+        int[] rejectDirections = tag.getIntArray("rejectDirections");
+        for (int i : rejectDirections) {
+            this.rejectDirections.add(Direction.from3DDataValue(i));
+        }
+
+        markForUpdate();
     }
 
-    @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-        super.saveAdditional(tag, registries);
-        networkNode.saveData(tag);
-        connections.writeToTag(tag);
-    }
-
-    private void onInitTick() {
-        assert level != null;
-        this.networkNode.build(level, this);
-    }
 
     @Override
     public void onChunkUnloaded() {
         super.onChunkUnloaded();
-        this.connections.clear();
+        this.connectionState.clear();
     }
 
     @Override
     public void setRemoved() {
         super.setRemoved();
-        this.connections.clear();
+        this.connectionState.clear();
     }
 
     @Override
     public void clearRemoved() {
         super.clearRemoved();
-        NetworkBuilder.onInitTick(this, this::onInitTick);
+        NetworkBuilder.onInitTick(this, () -> {
+            conduitNode().scheduleNetwork(0);
+        });
     }
-
 }

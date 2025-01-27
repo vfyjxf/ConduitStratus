@@ -33,7 +33,7 @@ neoForge {
 
 dependencies {
     implementation(rootProject)
-
+    implementation(project(":CloudLib"))
     compileOnly("org.eclipse.collections:eclipse-collections-api:11.1.0")
     compileOnly("org.eclipse.collections:eclipse-collections:11.1.0")
 }

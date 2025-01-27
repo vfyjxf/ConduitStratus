@@ -25,7 +25,7 @@ public interface NetworkData<T> {
     void set(T value);
 
     @SuppressWarnings("unchecked")
-    default <C> NetworkData<C> checked() {
+    default <C> NetworkData<C> cast() {
         return (NetworkData<C>) this;
     }
 

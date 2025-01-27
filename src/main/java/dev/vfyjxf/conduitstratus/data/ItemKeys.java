@@ -1,9 +1,9 @@
 package dev.vfyjxf.conduitstratus.data;
 
+import dev.vfyjxf.cloudlib.data.lang.LangBuilder;
+import dev.vfyjxf.cloudlib.data.lang.LangEntry;
+import dev.vfyjxf.cloudlib.data.lang.LangProvider;
 import dev.vfyjxf.conduitstratus.Constants;
-import dev.vfyjxf.conduitstratus.api.data.lang.LangBuilder;
-import dev.vfyjxf.conduitstratus.api.data.lang.LangEntry;
-import dev.vfyjxf.conduitstratus.api.data.lang.LangProvider;
 
 @LangProvider
 public final class ItemKeys {

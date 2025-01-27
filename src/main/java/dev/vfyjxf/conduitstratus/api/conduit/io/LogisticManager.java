@@ -16,7 +16,7 @@ public interface LogisticManager<TRAIT extends TransferTrait<REQUEST, RESPONSE>,
      * @param channels    the channels to handle
      * @param currentTick current server tick
      */
-    void tickTraits(Network network, NetworkChannels<TRAIT> channels, long currentTick);
+    void tick(Network network, NetworkChannels<TRAIT> channels, long currentTick);
 
     /**
      * @param channels the channels of request type

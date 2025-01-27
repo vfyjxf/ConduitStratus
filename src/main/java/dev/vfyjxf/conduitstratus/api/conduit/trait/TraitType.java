@@ -1,40 +1,23 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
 import net.minecraft.resources.ResourceLocation;
 
 //TODO:redesign
 //TODO:Trait registry
-public class TraitType {
+public record TraitType(ResourceLocation id, HandleType handleType, TraitFactory factory) {
 
-    private final ResourceLocation id;
-    private final HandleType handleType;
-    private final TraitFactory factory;
 
-    public TraitType(
-            ResourceLocation id,
-            HandleType handleType,
-            TraitFactory factory
-    ) {
-        this.id = id;
-        this.handleType = handleType;
-        this.factory = factory;
-    }
-
-    public ResourceLocation id() {
-        return id;
-    }
-
-    public HandleType handleType() {
-        return handleType;
-    }
-
-    public TraitFactory getFactory() {
-        return factory;
-    }
+    public static final Codec<TraitType> CODEC = RecordCodecBuilder.create(ins -> ins.group(
+            ResourceLocation.CODEC.fieldOf("id").forGetter(TraitType::id),
+            HandleType.CODEC.fieldOf("handleType").forGetter(TraitType::handleType)
+    ).apply(ins, (id, handleType) -> {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }));
 
     @Override
-
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

@@ -10,57 +10,59 @@ import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.IdentityHashMap;
-
 public class CachedCapabilityTraitConnection<CAP> implements CapabilityConnection<CAP> {
 
     private final ServerLevel level;
-    private final BlockCapabilityCache<? extends CAP, @Nullable Direction> cache;
-    private IdentityHashMap<BlockCapability<?, @Nullable Direction>, BlockCapabilityCache<?, @Nullable Direction>> extraCaches = null;
+    private final Direction direction;
+    private final BlockCapabilityCache<? extends CAP, ?> cache;
 
-    public CachedCapabilityTraitConnection(Trait trait, BlockCapability<? extends CAP, @Nullable Direction> token) {
+    public CachedCapabilityTraitConnection(Trait trait, BlockCapability<? extends CAP, @Nullable Void> token) {
+        this(trait, token, null);
+    }
+
+    public <C> CachedCapabilityTraitConnection(Trait trait, BlockCapability<? extends CAP, @Nullable C> token, @Nullable C context) {
         this.level = trait.getLevel();
         Direction traitDirection = trait.getDirection();
         BlockPos nodePos = trait.getNode().getPos();
         BlockPos targetPos = nodePos.relative(traitDirection);
+        this.direction = traitDirection;
         cache = BlockCapabilityCache.create(
                 token,
                 level,
                 targetPos,
-                traitDirection.getOpposite()
+                context
         );
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public BlockCapability<? extends CAP, @Nullable Direction> getToken() {
-        return (BlockCapability<? extends CAP, Direction>) cache.getCapability();
+    public BlockCapability<? extends CAP, ? extends @Nullable Object> getToken() {
+        return (BlockCapability<? extends CAP, Object>) cache.getCapability();
     }
 
     @Override
     public CAP getCapability() {
-        //Must be not null,the connection create when capability is present
-        //noinspection ConstantConditions
         return cache.getCapability();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    public <T, C> T getCapability(BlockCapability<T, @Nullable C> capability, @Nullable C context) {
+        return level.getCapability(capability, cache.pos(), context);
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked"})
     public <T> @Nullable T getCapability(BlockCapability<T, @Nullable Direction> capability) {
-        //region lazy init
-        if (extraCaches == null) {
-            extraCaches = new IdentityHashMap<>(3);// item + fluid + energy + gas -1(we have save one in cache field)
-        }
-        //endregion
-        if (capability == cache.getCapability()) return (T) cache.getCapability();//fast path
-        extraCaches.computeIfAbsent(capability, key -> BlockCapabilityCache.create(
-                key,
-                level,
-                cache.pos(),
-                cache.context()
-        ));
-        BlockCapabilityCache<?, @Nullable Direction> capabilityCache = extraCaches.get(capability);
-        if (capabilityCache != null) return (T) capabilityCache.getCapability();
+        if (capability == cache.getCapability())
+            return (T) cache.getCapability();
+        else return null;
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public <T> @Nullable T getCapabilityVoid(BlockCapability<T, @Nullable Void> capability) {
+        if (capability == cache.getCapability())
+            return (T) cache.getCapability();
         else return null;
     }
 
@@ -71,8 +73,7 @@ public class CachedCapabilityTraitConnection<CAP> implements CapabilityConnectio
 
     @Override
     public Direction getDirection() {
-        //noinspection ConstantConditions
-        return cache.context().getOpposite();
+        return direction;
     }
 
     @Override

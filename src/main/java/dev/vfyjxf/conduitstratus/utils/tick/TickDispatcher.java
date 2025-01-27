@@ -14,6 +14,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.apache.commons.lang3.tuple.Pair;
@@ -65,6 +66,9 @@ public final class TickDispatcher {
         NeoForge.EVENT_BUS.addListener(this::onServerLevelTickPost);
         NeoForge.EVENT_BUS.addListener(this::onUnloadChunk);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onUnloadLevel);
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> {
+            stop();
+        });
     }
 
     public void stop() {
@@ -79,7 +83,7 @@ public final class TickDispatcher {
 
     private void onServerTickPost(ServerTickEvent.Post event) {
         for (ConduitNetwork network : tickingNetworks.networks) {
-            network.tick(currentTick);
+            network.tick(event.getServer(), currentTick);
         }
         currentTick++;
     }
@@ -129,7 +133,7 @@ public final class TickDispatcher {
 
         this.tickingNetworks.updateNetworks();
         for (ConduitNetwork network : this.tickingNetworks.networks) {
-            for (var node : network.getNodes()) {
+            for (var node : network.getActiveNodes()) {
                 if (node.getLevel() == level) {
                     toDestroy.add(node);
                 }
@@ -137,7 +141,7 @@ public final class TickDispatcher {
         }
 
         for (ConduitNetworkNode node : toDestroy) {
-            node.destroy();
+            node.destroy(true);
         }
 
         this.initBlockEntities.removeLevel(level);

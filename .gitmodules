@@ -1,0 +1,3 @@
+[submodule "CloudLib"]
+	path = CloudLib
+	url = https://github.com/vfyjxf/CloudLib.git

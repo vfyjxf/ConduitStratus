@@ -1,15 +1,18 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
+import dev.vfyjxf.cloudlib.api.data.DataContainer;
+import dev.vfyjxf.cloudlib.api.event.EventChannel;
+import dev.vfyjxf.conduitstratus.api.conduit.TickStatus;
 import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
-import dev.vfyjxf.conduitstratus.api.conduit.data.DataKey;
 import dev.vfyjxf.conduitstratus.api.conduit.event.TraitEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.network.ChannelColor;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
-import dev.vfyjxf.conduitstratus.api.event.EventChannel;
 import dev.vfyjxf.conduitstratus.utils.Checks;
 import net.minecraft.core.Direction;
-import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.map.MutableMap;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,12 +21,12 @@ public abstract class BasicTrait<C extends TraitConnection> implements Trait {
     protected final TraitType type;
     protected final NetworkNode holder;
     protected final Direction direction;
-    protected final EventChannel<TraitEvent> eventChannel = EventChannel.create(this);
-    protected final MutableMap<DataKey<?>, @Nullable Object> dataMap = Maps.mutable.withInitialCapacity(2);
+    protected final EventChannel<TraitEvent> events = EventChannel.create(this);
+    protected final DataContainer dataContainer = new DataContainer();
     @NotNull
     protected TraitIO io = TraitIO.NONE;
     protected ChannelColor channelColor = ChannelColor.RED;
-    protected TraitStatus status = null;
+    protected TickStatus status = new TickStatus(20, 20).sleep();
     @Nullable
     protected C connection;
     protected int priority = 0;
@@ -46,12 +49,12 @@ public abstract class BasicTrait<C extends TraitConnection> implements Trait {
     }
 
     @Override
-    public TraitStatus getStatus() {
+    public TickStatus getStatus() {
         return status;
     }
 
     @Override
-    public BasicTrait<C> setStatus(TraitStatus status) {
+    public BasicTrait<C> setStatus(TickStatus status) {
         this.status = status;
         return this;
     }
@@ -89,52 +92,19 @@ public abstract class BasicTrait<C extends TraitConnection> implements Trait {
     }
 
     @Override
-    public Trait setIO(TraitIO traitIO) {
+    public BasicTrait<C> setIO(TraitIO traitIO) {
         this.io = traitIO;
         return this;
     }
 
     @Override
-    public <T> void attach(DataKey<T> key, @Nullable T value) {
-        dataMap.put(key, value);
-    }
-
-    @Override
-    @SuppressWarnings({"unchecked", "ConstantConditions"})
-    public <T> T get(DataKey<T> key) {
-        return (T) dataMap.get(key);
-    }
-
-    @Override
-    @SuppressWarnings({"unchecked", "ConstantConditions"})
-    public <T> T detach(DataKey<T> key) {
-        return (T) dataMap.remove(key);
-    }
-
-    @Override
-    @SuppressWarnings({"unchecked", "ConstantConditions"})
-    public <T> T getOrDefault(DataKey<T> key, @Nullable T defaultValue) {
-        return (T) dataMap.getOrDefault(key, defaultValue);
-    }
-
-    @Override
-    public void clear() {
-        dataMap.clear();
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return dataMap.isEmpty();
-    }
-
-    @Override
-    public boolean has(DataKey<?> key) {
-        return dataMap.containsKey(key);
+    public @NotNull DataContainer dataContainer() {
+        return dataContainer;
     }
 
     @Override
     public EventChannel<TraitEvent> events() {
-        return eventChannel;
+        return events;
     }
 
     @Override
@@ -145,4 +115,18 @@ public abstract class BasicTrait<C extends TraitConnection> implements Trait {
     public void setConnection(@Nullable C connection) {
         this.connection = connection;
     }
+
+
+    @Override
+    @MustBeInvokedByOverriders
+    public void saveData(CompoundTag tag, HolderLookup.Provider registries) {
+        tag.put("type", TraitType.CODEC.encodeStart(NbtOps.INSTANCE, this.type).getOrThrow());
+    }
+
+    @Override
+    @MustBeInvokedByOverriders
+    public void loadData(CompoundTag tag, HolderLookup.Provider registries) {
+
+    }
+
 }

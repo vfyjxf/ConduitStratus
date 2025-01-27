@@ -18,7 +18,7 @@ public class ItemTrait extends ItemTransferTrait implements PoxyTrait<IItemHandl
     private final PoxyCapabilityContainer poxyContainer = new PoxyCapabilityContainer();
 
     public ItemTrait(NetworkNode holder, Direction direction) {
-        super(TraitTypes.ITEM, holder, direction, Capabilities.ItemHandler.BLOCK);
+        super(TraitTypes.ITEM, holder, direction);
     }
 
     @Override
@@ -33,11 +33,11 @@ public class ItemTrait extends ItemTransferTrait implements PoxyTrait<IItemHandl
 
     @Override
     public ItemResponse handleRequest(ItemRequest request) {
-        return null;
+        return ItemResponse.pass();
     }
 
     @Override
-    public BlockCapability<IItemHandler, ?> getPoxyToken() {
+    public BlockCapability<IItemHandler, @Nullable Direction> getPoxyToken() {
         return Capabilities.ItemHandler.BLOCK;
     }
 

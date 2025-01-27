@@ -1,6 +1,7 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
 import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
+import dev.vfyjxf.conduitstratus.api.conduit.TickStatus;
 import dev.vfyjxf.conduitstratus.api.conduit.io.IORequest;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import net.minecraft.core.Direction;
@@ -21,7 +22,7 @@ public abstract class BasicTransferCapabilityTrait<CAP, REQUEST extends IOReques
     }
 
     @Override
-    public BasicTransferCapabilityTrait<CAP, REQUEST, RESPONSE> setStatus(TraitStatus status) {
+    public BasicTransferCapabilityTrait<CAP, REQUEST, RESPONSE> setStatus(TickStatus status) {
         super.setStatus(status);
         return this;
     }

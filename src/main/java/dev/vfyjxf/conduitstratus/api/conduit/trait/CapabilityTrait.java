@@ -1,5 +1,6 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
+import dev.vfyjxf.conduitstratus.utils.LevelHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -24,16 +25,16 @@ public interface CapabilityTrait<CAP> extends Trait {
         Level level = getLevel();
         BlockPos pos = getFacingPos();
         Direction direction = getDirection().getOpposite();
-        return level.getCapability(getToken(), pos, direction) != null;
+        return LevelHelper.getCapability(level, pos, getToken(), direction) != null;
     }
 
     @Override
-    default boolean injectable() {
-        return Trait.super.injectable() && getCapability() != null;
+    default boolean importable() {
+        return getIO().input() && getCapability() != null;
     }
 
     @Override
-    default boolean extractable() {
-        return Trait.super.extractable() && getCapability() != null;
+    default boolean exportable() {
+        return getIO().output() && getCapability() != null;
     }
 }

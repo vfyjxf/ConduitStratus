@@ -1,12 +1,15 @@
 package dev.vfyjxf.conduitstratus.api.conduit.network;
 
+import dev.vfyjxf.cloudlib.api.event.EventHandler;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
+import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitDistance;
 import dev.vfyjxf.conduitstratus.api.conduit.event.NetworkEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
-import dev.vfyjxf.conduitstratus.api.event.EventHandler;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.Level;
 import org.eclipse.collections.api.collection.MutableCollection;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Unmodifiable;
@@ -14,11 +17,11 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.util.function.Predicate;
 
 @ApiStatus.NonExtendable
-public interface Network extends EventHandler<NetworkEvent> {
+public interface Network extends EventHandler<NetworkEvent>, BaseNetwork {
 
-    MutableCollection<? extends NetworkNode> getNodes();
+    MutableCollection<? extends NetworkNode> getActiveNodes();
 
-    NetworkNode getNode(BlockPos pos);
+    NetworkNode getNode(ResourceKey<Level> dimension, BlockPos pos);
 
     int size();
 
@@ -48,6 +51,9 @@ public interface Network extends EventHandler<NetworkEvent> {
 
     boolean updateNetwork();
 
-    void tick(long currentTick);
+    void tick(MinecraftServer server, long currentTick);
 
+    void destroy();
+
+    ConduitDistance getDistance();
 }

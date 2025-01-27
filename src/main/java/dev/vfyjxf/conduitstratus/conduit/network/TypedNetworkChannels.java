@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.EnumMap;
+import java.util.Map;
 import java.util.function.Predicate;
 
 @ApiStatus.Internal
@@ -35,8 +36,9 @@ public class TypedNetworkChannels<TRAIT extends Trait> implements NetworkChannel
     /**
      * Note: 通常为少量多次的更新
      * output -> inputs
+     * TODO:use  {@link it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap}
      */
-    private final MutableMap<ChannelColor, MutableMap<TRAIT, MutableList<? extends TRAIT>>> mappedByChannel = MapAdapter.adapt(new EnumMap<>(ChannelColor.class));
+    private final MutableMap<ChannelColor, @Unmodifiable Map<TRAIT, MutableList<? extends TRAIT>>> mappedByChannel = MapAdapter.adapt(new EnumMap<>(ChannelColor.class));
 
     private MutableList<TraitInfo<TRAIT>> traitsToAdd = Lists.mutable.empty();
 
@@ -73,7 +75,7 @@ public class TypedNetworkChannels<TRAIT extends Trait> implements NetworkChannel
 
     @Override
     @Unmodifiable
-    public MutableMap<ChannelColor, @Unmodifiable MutableMap<TRAIT, @Unmodifiable MutableList<? extends TRAIT>>> mapped() {
+    public MutableMap<ChannelColor, @Unmodifiable Map<TRAIT, @Unmodifiable MutableList<? extends TRAIT>>> mapped() {
         return mappedByChannel.asUnmodifiable();
     }
 
@@ -86,8 +88,8 @@ public class TypedNetworkChannels<TRAIT extends Trait> implements NetworkChannel
     public MutableList<? extends TRAIT> exporterOf(TRAIT importer, boolean includeImporter) {
         //todo:implement
         MutableList<TRAIT> exporters = Lists.mutable.empty();
-        for (MutableMap<TRAIT, MutableList<? extends TRAIT>> ioMap : mappedByChannel) {
-            ioMap.forEachKeyValue((exporter, importers) -> {
+        for (var ioMap : mappedByChannel) {
+            ioMap.forEach((exporter, importers) -> {
                 if (importers.contains(importer)) {
                     exporters.add(exporter);
                 }

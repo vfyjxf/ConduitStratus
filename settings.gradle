@@ -11,3 +11,4 @@ plugins {
 }
 rootProject.name = 'ConduitStratus'
 include(":DataGen")
+include(":CloudLib")

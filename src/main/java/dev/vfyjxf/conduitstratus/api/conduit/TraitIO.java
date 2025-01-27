@@ -1,6 +1,5 @@
 package dev.vfyjxf.conduitstratus.api.conduit;
 
-//TODO:rename to TraitIO
 public enum TraitIO {
 
     INPUT,
