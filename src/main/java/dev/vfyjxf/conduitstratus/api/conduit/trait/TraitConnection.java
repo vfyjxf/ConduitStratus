@@ -8,7 +8,13 @@ import org.jetbrains.annotations.Nullable;
 public interface TraitConnection {
 
     @Nullable
+    <T, C> T getCapability(BlockCapability<T, @Nullable C> capability, @Nullable C context);
+
+    @Nullable
     <T> T getCapability(BlockCapability<T, @Nullable Direction> capability);
+
+    @Nullable
+    <T> T getCapabilityVoid(BlockCapability<T, @Nullable Void> capability);
 
     @Nullable
     BlockEntity getFacing();

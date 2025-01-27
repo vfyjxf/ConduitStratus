@@ -116,7 +116,6 @@ public class ConduitBlockEntity extends NetworkBlockEntity {
     }
 
     public void addTrait(TraitType type, Direction side) {
-//        networkNode.addTrait(side, );
         connectionState.addTrait(side);
         markForUpdate();
         markForSave();

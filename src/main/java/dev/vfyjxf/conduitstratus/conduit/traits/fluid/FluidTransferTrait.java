@@ -1,4 +1,4 @@
-package dev.vfyjxf.conduitstratus.conduit.traits.item;
+package dev.vfyjxf.conduitstratus.conduit.traits.fluid;
 
 import dev.vfyjxf.conduitstratus.api.conduit.TickStatus;
 import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
@@ -8,26 +8,26 @@ import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
 import dev.vfyjxf.conduitstratus.conduit.traits.connection.CachedCapabilityTraitConnection;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
-public abstract class ItemTransferTrait extends BasicTransferCapabilityTrait<IItemHandler, ItemRequest, ItemResponse> {
+public abstract class FluidTransferTrait extends BasicTransferCapabilityTrait<IFluidHandler, FluidRequest, FluidResponse> {
 
     /**
-     * The speed at which items are exported from this trait.
+     * The speed at which this trait can export fluids.
      * <p>
-     * Unit: items per tick
+     * Unit: mB/t
      */
-    protected int exportSpeed = 16;
+    private int exportSpeed = 200;
 
-    protected ItemTransferTrait(
+    protected FluidTransferTrait(
             TraitType type,
             NetworkNode holder,
             Direction direction
     ) {
-        super(type, holder, direction, Capabilities.ItemHandler.BLOCK);
+        super(type, holder, direction, Capabilities.FluidHandler.BLOCK);
         this.connection = new CachedCapabilityTraitConnection<>(
                 this,
-                Capabilities.ItemHandler.BLOCK,
+                Capabilities.FluidHandler.BLOCK,
                 direction.getOpposite()
         );
     }
@@ -41,21 +41,20 @@ public abstract class ItemTransferTrait extends BasicTransferCapabilityTrait<IIt
     }
 
     @Override
-    public ItemTransferTrait setStatus(TickStatus status) {
+    public FluidTransferTrait setStatus(TickStatus status) {
         super.setStatus(status);
         return this;
     }
 
     @Override
-    public ItemTransferTrait setIO(TraitIO traitIO) {
+    public FluidTransferTrait setIO(TraitIO traitIO) {
         super.setIO(traitIO);
         return this;
     }
 
     @Override
-    public ItemTransferTrait setPriority(int priority) {
+    public FluidTransferTrait setPriority(int priority) {
         super.setPriority(priority);
         return this;
     }
-
 }

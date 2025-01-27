@@ -1,6 +1,7 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
 import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
+import dev.vfyjxf.conduitstratus.api.conduit.TickStatus;
 import dev.vfyjxf.conduitstratus.api.conduit.io.IORequest;
 
 /**
@@ -14,7 +15,7 @@ import dev.vfyjxf.conduitstratus.api.conduit.io.IORequest;
 public interface TransferTrait<REQUEST extends IORequest, RESPONSE> extends Trait {
 
     @Override
-    default TransferTrait<REQUEST, RESPONSE> setStatus(TraitStatus status) {
+    default TransferTrait<REQUEST, RESPONSE> setStatus(TickStatus status) {
         return this;
     }
 

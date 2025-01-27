@@ -1,16 +1,21 @@
-package dev.vfyjxf.conduitstratus.api.conduit.trait;
+package dev.vfyjxf.conduitstratus.api.conduit;
 
+import dev.vfyjxf.conduitstratus.api.conduit.device.NetworkDevice;
+import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
 import org.jetbrains.annotations.Contract;
 
-public class TraitStatus {
+/**
+ * {@link TickStatus} defines the status of the tick rate of a device({@link Trait} and {@link NetworkDevice}).
+ */
+public class TickStatus {
 
-    private boolean sleeping;
+    private boolean sleeping = false;
     private final int minTickRate;
     private final int maxTickRate;
     private int currentTickRate;
     private long lastTick;
 
-    public TraitStatus(int maxTickRate, int minTickRate) {
+    public TickStatus(int maxTickRate, int minTickRate) {
         this.maxTickRate = maxTickRate;
         this.minTickRate = minTickRate;
         this.currentTickRate = (maxTickRate + minTickRate) / 2;
@@ -20,12 +25,12 @@ public class TraitStatus {
         return sleeping;
     }
 
-    public TraitStatus sleep() {
+    public TickStatus sleep() {
         sleeping = true;
         return this;
     }
 
-    public TraitStatus wake() {
+    public TickStatus wake() {
         sleeping = false;
         return this;
     }
@@ -34,34 +39,34 @@ public class TraitStatus {
         return !sleeping;
     }
 
-    public TraitStatus setTickRate(int rate) {
+    public TickStatus setTickRate(int rate) {
         this.currentTickRate = Math.clamp(rate, minTickRate, maxTickRate);
         return this;
     }
 
-    public TraitStatus setLastTick(long tick) {
+    public TickStatus setLastTick(long tick) {
         this.lastTick = tick;
         return this;
     }
 
     @Contract(" -> this")
-    public TraitStatus speedUp() {
+    public TickStatus speedUp() {
         return speedUp(2);
     }
 
     @Contract("_ -> this")
-    public TraitStatus speedUp(int rate) {
+    public TickStatus speedUp(int rate) {
         this.currentTickRate = Math.max(minTickRate, currentTickRate - rate);
         return this;
     }
 
     @Contract(" -> this")
-    public TraitStatus speedDown() {
+    public TickStatus speedDown() {
         return speedDown(1);
     }
 
     @Contract("_ -> this")
-    public TraitStatus speedDown(int rate) {
+    public TickStatus speedDown(int rate) {
         this.currentTickRate = Math.min(maxTickRate, currentTickRate + rate);
         return this;
     }
@@ -80,5 +85,9 @@ public class TraitStatus {
 
     public boolean shouldTick(long currentTick) {
         return currentTick >= lastTick + currentTickRate;
+    }
+
+    public boolean shouldWork(long currentTick) {
+        return working() && shouldTick(currentTick);
     }
 }

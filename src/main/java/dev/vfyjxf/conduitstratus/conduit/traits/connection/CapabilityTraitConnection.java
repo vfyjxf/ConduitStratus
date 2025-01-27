@@ -12,35 +12,49 @@ import org.jetbrains.annotations.Nullable;
 public class CapabilityTraitConnection<CAP> implements CapabilityConnection<CAP> {
 
     private final Level level;
-    private final BlockCapability<? extends CAP, @Nullable Direction> token;
+    private final BlockCapability<? extends CAP, ? extends @Nullable Object> token;
     private final BlockPos pos;
     private final Direction direction;
 
-    public CapabilityTraitConnection(Trait trait, BlockCapability<? extends CAP, @Nullable Direction> token) {
+    public CapabilityTraitConnection(Trait trait, BlockCapability<? extends CAP, @Nullable Object> token) {
         this.level = trait.getLevel();
         this.token = token;
         Direction traitDirection = trait.getDirection();
         BlockPos nodePos = trait.getNode().getPos();
         this.pos = nodePos.relative(traitDirection);
-        this.direction = traitDirection.getOpposite();
+        this.direction = traitDirection;
     }
 
     @Override
-    public BlockCapability<? extends CAP, @Nullable Direction> getToken() {
-        return token;
+    @SuppressWarnings("unchecked")
+    public BlockCapability<? extends CAP, ? extends @Nullable Direction> getToken() {
+        return (BlockCapability<? extends CAP, ? extends Direction>) token;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public CAP getCapability() {
-        //Must be not null,the connection create when capability is present
-        //noinspection ConstantConditions
-        return level.getCapability(token, pos, direction);
+        if (token.contextClass() == Void.class) {
+            return level.getCapability(token, pos, null);
+        } else {
+            return level.getCapability((BlockCapability<? extends CAP, ? super Direction>) token, pos, direction);
+        }
     }
 
+
+    @Override
+    public <T, C> @Nullable T getCapability(BlockCapability<T, @Nullable C> capability, @Nullable C context) {
+        return level.getCapability(capability, pos, context);
+    }
 
     @Override
     public <T> @Nullable T getCapability(BlockCapability<T, @Nullable Direction> capability) {
-        return level.getCapability(capability, pos, direction);
+        return level.getCapability(capability, pos, direction.getOpposite());
+    }
+
+    @Override
+    public <T> @Nullable T getCapabilityVoid(BlockCapability<T, @Nullable Void> capability) {
+        return level.getCapability(capability, pos, null);
     }
 
     @Override
@@ -50,7 +64,7 @@ public class CapabilityTraitConnection<CAP> implements CapabilityConnection<CAP>
 
     @Override
     public Direction getDirection() {
-        return direction.getOpposite();
+        return direction;
     }
 
     @Override

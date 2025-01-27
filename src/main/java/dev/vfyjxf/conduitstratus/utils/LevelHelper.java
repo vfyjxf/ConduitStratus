@@ -3,6 +3,7 @@ package dev.vfyjxf.conduitstratus.utils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.capabilities.BlockCapability;
 import org.jetbrains.annotations.Nullable;
 
 public class LevelHelper {
@@ -21,5 +22,12 @@ public class LevelHelper {
     }
 
     private LevelHelper() {
+    }
+
+    public static <CAP, CTX> CAP getCapability(Level level, BlockPos blockPos, BlockCapability<CAP, CTX> capability, CTX context) {
+        if (level.isLoaded(blockPos)) {
+            return level.getCapability(capability, blockPos, context);
+        }
+        return null;
     }
 }
