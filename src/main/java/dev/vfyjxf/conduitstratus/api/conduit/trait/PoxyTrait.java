@@ -4,7 +4,7 @@ import net.neoforged.neoforge.capabilities.BlockCapability;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * A trait that can be used to proxy a capability.
+ * C trait that can be used to proxy a capability.
  */
 public interface PoxyTrait<CAP> {
 

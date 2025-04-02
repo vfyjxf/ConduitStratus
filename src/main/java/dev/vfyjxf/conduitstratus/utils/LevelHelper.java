@@ -21,7 +21,12 @@ public class LevelHelper {
         return level.getBlockEntity(blockPos);
     }
 
-    private LevelHelper() {
+    public static <T extends BlockEntity> T getBlockEntity(Level level, BlockPos blockPos, Class<T> blockEntityClass) {
+        BlockEntity blockEntity = getBlockEntity(level, blockPos);
+        if (blockEntityClass.isInstance(blockEntity)) {
+            return blockEntityClass.cast(blockEntity);
+        }
+        return null;
     }
 
     public static <CAP, CTX> CAP getCapability(Level level, BlockPos blockPos, BlockCapability<CAP, CTX> capability, CTX context) {
@@ -30,4 +35,8 @@ public class LevelHelper {
         }
         return null;
     }
+
+    private LevelHelper() {
+    }
+
 }

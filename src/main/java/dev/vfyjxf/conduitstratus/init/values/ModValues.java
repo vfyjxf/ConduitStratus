@@ -1,9 +1,10 @@
 package dev.vfyjxf.conduitstratus.init.values;
 
-import dev.vfyjxf.conduitstratus.Constants;
+import dev.vfyjxf.conduitstratus.StratusConstants;
 import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
+import dev.vfyjxf.conduitstratus.api.conduit.ConduitEntity;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitType;
 import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNode;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
 import dev.vfyjxf.conduitstratus.conduit.ConduitBlockItem;
 import dev.vfyjxf.conduitstratus.conduit.ConduitItem;
 import dev.vfyjxf.conduitstratus.conduit.block.ConduitBlock;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
@@ -38,7 +40,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-@EventBusSubscriber(modid = Constants.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = StratusConstants.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public final class ModValues {
 
     public static void register(IEventBus modbus) {
@@ -48,10 +50,10 @@ public final class ModValues {
         BLOCK_ENTITIES.register(modbus);
     }
 
-    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
-    private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
+    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(StratusConstants.MOD_ID);
+    private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(StratusConstants.MOD_ID);
     private static final MutableList<ConduitValue<?>> CONDUITS = Lists.mutable.empty();
-    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, StratusConstants.MOD_ID);
 
 
     //////////////////////////
@@ -61,6 +63,7 @@ public final class ModValues {
     //TODO:make it be a registry
 
     public static final ItemValue<TraitItem> itemTrait = traitItem(TraitTypes.ITEM);
+    public static final ItemValue<TraitItem> fluidTrait = traitItem(TraitTypes.FLUID);
 
     //////////////////////////
     //        Blocks         /
@@ -94,7 +97,9 @@ public final class ModValues {
     );
 
 
-    public static final BlockCapability<ConduitNode, Void> CONDUIT_NODE_CAP = BlockCapability.createVoid(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "conduit_node"), ConduitNode.class);
+    public static final BlockCapability<ConduitNode, Void> CONDUIT_NODE_CAP = BlockCapability.createVoid(ResourceLocation.fromNamespaceAndPath(StratusConstants.MOD_ID, "conduit_node"), ConduitNode.class);
+    public static final BlockCapability<ConduitEntity, Void> CONDUIT_ENTITY_CAP = BlockCapability.createVoid(ResourceLocation.fromNamespaceAndPath(StratusConstants.MOD_ID, "conduit_entity"), ConduitEntity.class);
+
 
     @SubscribeEvent
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -146,6 +151,14 @@ public final class ModValues {
         return itemValue;
     }
 
+    @Nullable
+    private static ItemValue<TraitItem> traitItemRequireMod(TraitType type, String modid) {
+        if (ModList.get().isLoaded(modid)) {
+            return traitItem(type);
+        }
+        return null;
+    }
+
     public static TraitItem getTraitItem(TraitType type) {
         return (TraitItem) TraitItemValues.getTraitItem(type);
     }
@@ -170,7 +183,7 @@ public final class ModValues {
     }
 
     private static class CreativeTabValues {
-        public static final DeferredRegister<CreativeModeTab> CREATIVE_TAB = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, Constants.MOD_ID);
+        public static final DeferredRegister<CreativeModeTab> CREATIVE_TAB = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, StratusConstants.MOD_ID);
         public static final MutableList<DeferredItem<?>> creativeTagItems = Lists.mutable.empty();
         public static final DeferredHolder<CreativeModeTab, CreativeModeTab> creativeTab = CREATIVE_TAB.register(
                 "conduit_tab",

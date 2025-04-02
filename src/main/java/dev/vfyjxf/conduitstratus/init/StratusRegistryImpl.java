@@ -3,8 +3,8 @@ package dev.vfyjxf.conduitstratus.init;
 import dev.vfyjxf.conduitstratus.api.StratusRegistry;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
 import dev.vfyjxf.conduitstratus.api.conduit.io.LogisticManager;
-import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.map.ConcurrentMutableMap;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,7 +13,7 @@ public class StratusRegistryImpl implements StratusRegistry {
 
     public static StratusRegistryImpl INSTANCE = new StratusRegistryImpl();
 
-    private final MutableMap<HandleType, LogisticManager<?, ?, ?>> logisticManagers = Maps.mutable.empty();
+    private final ConcurrentMutableMap<HandleType, LogisticManager<?, ?, ?>> logisticManagers = ConcurrentHashMap.newMap();
 
     @Nullable
     public LogisticManager<?, ?, ?> getLogisticManager(HandleType handleType) {

@@ -1,7 +1,7 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
-import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.TickStatus;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.io.IORequest;
 
 /**

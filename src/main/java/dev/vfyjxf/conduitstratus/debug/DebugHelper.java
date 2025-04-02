@@ -60,14 +60,14 @@ public class DebugHelper {
         }
 
         ConduitNode conduitNode = conduitBlockEntity.conduitNode();
-        BaseNetwork baseNetwork = conduitNode.getNetwork();
+        BaseNetwork baseNetwork = conduitNode.getNetworkUnsafe();
         if (!(baseNetwork instanceof Network network)) {
             return;
         }
 
         ConduitDistance distance = network.getDistance();
 
-        ConduitNodeId fromId = conduitNode.conduitId();
+        ConduitNodeId fromId = conduitNode.getId();
 
         List<DebugPackage.Entry> entries = new ArrayList<>();
 

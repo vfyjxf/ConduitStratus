@@ -6,18 +6,19 @@ import net.minecraft.nbt.CompoundTag;
 import java.util.Collection;
 import java.util.EnumSet;
 
+//TODO:support device rendering
 public class ConnectionState {
 
     private final EnumSet<Direction> conduitConnections = EnumSet.noneOf(Direction.class);
-    private final EnumSet<Direction> traitConnections = EnumSet.noneOf(Direction.class);
+    private final EnumSet<Direction> deviceConnections = EnumSet.noneOf(Direction.class);
 
     public boolean isEmpty() {
-        return conduitConnections.isEmpty() && traitConnections.isEmpty();
+        return conduitConnections.isEmpty() && deviceConnections.isEmpty();
     }
 
     public void clear() {
         conduitConnections.clear();
-        traitConnections.clear();
+        deviceConnections.clear();
     }
 
     public void addConnection(Direction dir) {
@@ -29,28 +30,28 @@ public class ConnectionState {
         if (conduitConnections.contains(dir)) {
             throw new IllegalStateException("Cannot set trait connection when conduit connection is present.");
         }
-        traitConnections.add(dir);
+        deviceConnections.add(dir);
     }
 
     public EnumSet<Direction> connectionSides() {
         return conduitConnections;
     }
 
-    public EnumSet<Direction> traitSides() {
-        return traitConnections;
+    public EnumSet<Direction> deviceSides() {
+        return deviceConnections;
     }
 
-    public void setTraitConnections(Collection<Direction> traitConnections) {
-        this.traitConnections.clear();
-        this.traitConnections.addAll(traitConnections);
+    public void setDeviceConnections(Collection<Direction> deviceConnections) {
+        this.deviceConnections.clear();
+        this.deviceConnections.addAll(deviceConnections);
     }
 
     public boolean hasTrait() {
-        return !traitConnections.isEmpty();
+        return !deviceConnections.isEmpty();
     }
 
     public boolean hasTrait(Direction dir) {
-        return traitConnections.contains(dir);
+        return deviceConnections.contains(dir);
     }
 
     public void setConnections(Collection<Direction> connections) {
@@ -67,7 +68,7 @@ public class ConnectionState {
     }
 
     public boolean isStraight() {
-        if (conduitConnections.size() != 2 || !traitConnections.isEmpty()) {
+        if (conduitConnections.size() != 2 || !deviceConnections.isEmpty()) {
             return false;
         }
         var it = conduitConnections.iterator();
@@ -83,7 +84,7 @@ public class ConnectionState {
         if (saveConduitConnections) {
             tag.putIntArray("conduitConnections", conduitConnections.stream().mapToInt(Direction::get3DDataValue).toArray());
         }
-        tag.putIntArray("traitConnections", traitConnections.stream().mapToInt(Direction::get3DDataValue).toArray());
+        tag.putIntArray("deviceConnections", deviceConnections.stream().mapToInt(Direction::get3DDataValue).toArray());
         return tag;
     }
 
@@ -94,9 +95,9 @@ public class ConnectionState {
                 conduitConnections.add(Direction.from3DDataValue(i));
             }
         }
-        traitConnections.clear();
-        for (int i : tag.getIntArray("traitConnections")) {
-            traitConnections.add(Direction.from3DDataValue(i));
+        deviceConnections.clear();
+        for (int i : tag.getIntArray("deviceConnections")) {
+            deviceConnections.add(Direction.from3DDataValue(i));
         }
     }
 
@@ -107,13 +108,13 @@ public class ConnectionState {
 
         ConnectionState that = (ConnectionState) o;
         return conduitConnections.equals(that.conduitConnections)
-                && traitConnections.equals(that.traitConnections);
+                && deviceConnections.equals(that.deviceConnections);
     }
 
     @Override
     public int hashCode() {
         int result = conduitConnections.hashCode();
-        result = 31 * result + traitConnections.hashCode();
+        result = 31 * result + deviceConnections.hashCode();
         return result;
     }
 
@@ -121,7 +122,7 @@ public class ConnectionState {
     public String toString() {
         return "ConduitConnections{" +
                 "conduitConnections=" + conduitConnections +
-                ", traitConnections=" + traitConnections +
+                ", deviceConnections=" + deviceConnections +
                 '}';
     }
 }

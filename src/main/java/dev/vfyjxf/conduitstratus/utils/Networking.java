@@ -1,15 +1,14 @@
 package dev.vfyjxf.conduitstratus.utils;
 
-import dev.vfyjxf.conduitstratus.Constants;
+import dev.vfyjxf.conduitstratus.StratusConstants;
 import dev.vfyjxf.conduitstratus.debug.DebugPackage;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.handling.DirectionalPayloadHandler;
 import net.neoforged.neoforge.network.registration.HandlerThread;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-@EventBusSubscriber(modid = Constants.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = StratusConstants.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public class Networking {
 
     @SubscribeEvent

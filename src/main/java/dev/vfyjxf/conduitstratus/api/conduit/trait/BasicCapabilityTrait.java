@@ -1,7 +1,8 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
-import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.TickStatus;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitType;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.capabilities.BlockCapability;

@@ -31,6 +31,7 @@ public class ItemLogisticManager implements LogisticManager<ItemTransferTrait, I
 
     @Override
     public void tick(Network network, NetworkChannels<ItemTransferTrait> channels, long currentTick) {
+        //TODO:multi-thread export status checks
         for (var ioMap : channels.mapped()) {
             ioMap.forEach((exporter, importers) -> {
                 //region check tick status

@@ -6,7 +6,10 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @ApiStatus.Internal
 public class NodeBFSIterator {

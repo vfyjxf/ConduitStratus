@@ -1,6 +1,5 @@
 package dev.vfyjxf.conduitstratus.utils;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 

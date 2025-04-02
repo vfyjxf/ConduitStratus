@@ -19,28 +19,27 @@ import java.util.function.Predicate;
 @ApiStatus.NonExtendable
 public interface Network extends EventHandler<NetworkEvent>, BaseNetwork {
 
+    /**
+     * @return all the active nodes.
+     */
     MutableCollection<? extends NetworkNode> getActiveNodes();
 
+    /**
+     * @param dimension the dimension of the node.
+     * @param pos       the position of the node.
+     * @return the network node.
+     */
     NetworkNode getNode(ResourceKey<Level> dimension, BlockPos pos);
 
+    /**
+     * @return the number of nodes in this network.
+     */
     int size();
 
     /**
      * @return true if this network has no nodes
      */
     boolean isEmpty();
-
-    boolean hasService(NetworkServiceType<?> type);
-
-    /**
-     * @param type the network service type.
-     * @param <T>  the network service type.
-     * @return the network service.
-     * @throws NullPointerException if the service not found.
-     */
-    <T extends NetworkService<T>> T getService(NetworkServiceType<T> type);
-
-    <T extends NetworkService<T>> T getOrCreateService(NetworkServiceType<T> type);
 
     @Unmodifiable
     MutableMap<HandleType, ? extends NetworkChannels<?>> getChannels();

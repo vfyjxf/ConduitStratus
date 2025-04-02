@@ -7,7 +7,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 
 /**
- * A collection of commonly used enumerations, cache them to reduce memory usage
+ * C collection of commonly used enumerations, cache them to reduce memory usage
  */
 public final class EnumConstant {
 

@@ -2,9 +2,9 @@ package dev.vfyjxf.conduitstratus.conduit.traits.item;
 
 import dev.vfyjxf.conduitstratus.api.conduit.TickStatus;
 import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitType;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.BasicTransferCapabilityTrait;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
 import dev.vfyjxf.conduitstratus.conduit.traits.connection.CachedCapabilityTraitConnection;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.capabilities.Capabilities;

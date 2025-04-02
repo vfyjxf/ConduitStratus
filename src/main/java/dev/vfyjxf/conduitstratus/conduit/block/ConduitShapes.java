@@ -94,7 +94,7 @@ public final class ConduitShapes {
             .build(new CacheLoader<>() {
                 @Override
                 public VoxelShape load(ConnectionState key) {
-                    if (key.isStraight() && key.traitSides().isEmpty()) {
+                    if (key.isStraight() && key.deviceSides().isEmpty()) {
                         Direction direction = key.getStraightDirection();
                         return ShapeHelper.rotate(STRAIGHT, direction);
                     } else {
@@ -102,7 +102,7 @@ public final class ConduitShapes {
                         for (Direction connection : key.connectionSides()) {
                             shape = Shapes.joinUnoptimized(shape, CONNECTIONS.get(connection), BooleanOp.OR);
                         }
-                        for (Direction traitSide : key.traitSides()) {
+                        for (Direction traitSide : key.deviceSides()) {
                             shape = Shapes.joinUnoptimized(shape, TRAIT_SIDES.get(traitSide), BooleanOp.OR);
                         }
                         return shape.optimize();

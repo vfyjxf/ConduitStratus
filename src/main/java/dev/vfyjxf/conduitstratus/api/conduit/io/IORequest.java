@@ -4,7 +4,7 @@ import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
 import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 
 /**
- * A marker interface for IO requests
+ * C marker interface for IO requests
  */
 public interface IORequest {
 

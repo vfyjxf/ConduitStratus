@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 @ApiStatus.Internal
 public interface BaseNetworkHolder {
     @Nullable
-    BaseNetwork getNetwork();
+    BaseNetwork getNetworkUnsafe();
 
     void setNetwork(@Nullable BaseNetwork network);
 

@@ -1,6 +1,6 @@
 package dev.vfyjxf.conduitstratus.debug;
 
-import dev.vfyjxf.conduitstratus.Constants;
+import dev.vfyjxf.conduitstratus.StratusConstants;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -30,7 +30,7 @@ public record DebugPackage(
     ) {
     }
 
-    public static final CustomPacketPayload.Type<DebugPackage> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "network_debug"));
+    public static final CustomPacketPayload.Type<DebugPackage> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(StratusConstants.MOD_ID, "network_debug"));
 
 
     public static final StreamCodec<ByteBuf, DebugPackage> STREAM_CODEC = StreamCodec.composite(

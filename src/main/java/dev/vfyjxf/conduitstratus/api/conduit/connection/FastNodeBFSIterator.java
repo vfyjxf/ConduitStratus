@@ -6,7 +6,8 @@ import org.eclipse.collections.api.list.primitive.MutableIntList;
 import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.*;
+import java.util.BitSet;
+import java.util.Objects;
 
 @ApiStatus.Internal
 public class FastNodeBFSIterator {

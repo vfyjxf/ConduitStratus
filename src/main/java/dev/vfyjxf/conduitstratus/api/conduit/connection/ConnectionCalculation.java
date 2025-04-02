@@ -20,7 +20,14 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.UUID;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -172,13 +179,13 @@ public class ConnectionCalculation {
 
 
     public void addIdleNode(ConduitNode node, int delay) {
-        ScheduledNode scheduledNode = schedulingIdleNodesMap.remove(node.conduitId());
+        ScheduledNode scheduledNode = schedulingIdleNodesMap.remove(node.getId());
         if (scheduledNode != null) {
             scheduledNode.cancel();
         }
         ScheduledNode scheduled = new ScheduledNode(node, this.ticks + delay);
         schedulingIdleNodes.add(scheduled);
-        schedulingIdleNodesMap.put(node.conduitId(), scheduled);
+        schedulingIdleNodesMap.put(node.getId(), scheduled);
     }
 
 
@@ -308,9 +315,9 @@ public class ConnectionCalculation {
             return null;
         }
 
-        if (node.getNetwork() != null) {
+        if (node.getNetworkUnsafe() != null) {
             log.warn("Node {} is already in a network", nodeId);
-            node.getNetwork().destroy();
+            node.getNetworkUnsafe().destroy();
             return null;
         }
 
@@ -355,7 +362,7 @@ public class ConnectionCalculation {
             var entry = it.next();
             var node = entry.getValue();
 
-            if (node.isInvalid() || node.getNetwork() != null) {
+            if (node.isInvalid() || node.getNetworkUnsafe() != null) {
                 it.remove();
                 continue;
             }
@@ -390,7 +397,7 @@ public class ConnectionCalculation {
             if(node.cancelled) {
                 continue;
             }
-            ConduitNodeId nodeId = node.node.conduitId();
+            ConduitNodeId nodeId = node.node.getId();
             schedulingIdleNodesMap.remove(nodeId);
             idleNodes.remove(nodeId);
             idleNodes.put(nodeId, node.node);

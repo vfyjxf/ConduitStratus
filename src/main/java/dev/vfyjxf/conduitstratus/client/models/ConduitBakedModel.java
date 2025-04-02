@@ -7,7 +7,7 @@ import com.mojang.math.Transformation;
 import dev.vfyjxf.conduitstratus.conduit.ConnectionState;
 import dev.vfyjxf.conduitstratus.utils.BiDirection;
 import dev.vfyjxf.conduitstratus.utils.EnumConstant;
-import dev.vfyjxf.conduitstratus.utils.Locations;
+import dev.vfyjxf.conduitstratus.utils.StratusLocations;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
@@ -37,10 +37,10 @@ import java.util.function.Function;
 
 public class ConduitBakedModel implements IDynamicBakedModel {
 
-    private static final ResourceLocation CENTER = Locations.of("block/conduit_center");
-    private static final ResourceLocation CONNECTION = Locations.of("block/conduit_connection");
-    private static final ResourceLocation STRAIGHT = Locations.of("block/conduit_straight");
-    private static final ResourceLocation TRAIT_INTERFACE = Locations.of("block/trait_interface");
+    private static final ResourceLocation CENTER = StratusLocations.of("block/conduit_center");
+    private static final ResourceLocation CONNECTION = StratusLocations.of("block/conduit_connection");
+    private static final ResourceLocation STRAIGHT = StratusLocations.of("block/conduit_straight");
+    private static final ResourceLocation TRAIT_INTERFACE = StratusLocations.of("block/trait_interface");
 
     private final LoadingCache<ConnectionState, MutableList<BakedQuad>> modelCache;
     private final ModelBaker baker;
@@ -100,7 +100,7 @@ public class ConduitBakedModel implements IDynamicBakedModel {
             for (Direction direction : connections.connectionSides()) {
                 quads.addAll(connectionQuads.get(direction));
             }
-            for (Direction traitConnection : connections.traitSides()) {
+            for (Direction traitConnection : connections.deviceSides()) {
                 quads.addAll(traitQuads.get(traitConnection));
             }
         }

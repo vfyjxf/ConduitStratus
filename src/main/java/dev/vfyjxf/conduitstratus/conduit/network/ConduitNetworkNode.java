@@ -1,9 +1,12 @@
 package dev.vfyjxf.conduitstratus.conduit.network;
 
 import dev.vfyjxf.conduitstratus.api.conduit.ConduitEntity;
+import dev.vfyjxf.conduitstratus.api.conduit.DeviceType;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitType;
 import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNode;
 import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNodeId;
 import dev.vfyjxf.conduitstratus.api.conduit.connection.ConnectionCalculation;
+import dev.vfyjxf.conduitstratus.api.conduit.device.AttachableDevice;
 import dev.vfyjxf.conduitstratus.api.conduit.network.BaseNetwork;
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkChannels;
@@ -11,7 +14,6 @@ import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkStatus;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.PoxyTrait;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
 import dev.vfyjxf.conduitstratus.init.values.ModValues;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,7 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -45,20 +46,21 @@ public class ConduitNetworkNode implements ConduitNode, NetworkNode {
 
     /////////////////////////////////////////////////////
     //********            NetworkNode         *********//
-    ////////////////////////////////////////////////////
+    /// /////////////////////////////////////////////////
 
     public static final int TRAIT_CAPACITY = 3;
 
     private BaseNetwork network;
     private final ConduitEntity holder;
     private final MutableMap<Direction, MutableList<Trait>> traits = Maps.mutable.empty();
+    private final MutableMap<Direction, AttachableDevice> devices = Maps.mutable.empty();
 
     public ConduitNetworkNode(ConduitEntity holder) {
         this.holder = holder;
     }
 
     @Override
-    public Network getEffectiveNetwork() {
+    public Network getNetwork() {
         if (!(network instanceof ConduitNetwork conduitNetwork) || network.status() == NetworkStatus.Destroyed) {
             if (network == null) {
                 throw new IllegalStateException("Network is not available yet");
@@ -74,7 +76,7 @@ public class ConduitNetworkNode implements ConduitNode, NetworkNode {
     }
 
     @Override
-    public BaseNetwork getNetwork() {
+    public @Nullable BaseNetwork getNetworkUnsafe() {
         if (network != null && network.status() == NetworkStatus.Destroyed) {
             network = null;
         }
@@ -92,10 +94,35 @@ public class ConduitNetworkNode implements ConduitNode, NetworkNode {
     }
 
     @Override
+    public void addDevice(Direction direction, AttachableDevice device) {
+        devices.put(direction, device);
+    }
+
+    @Override
+    public boolean hasDevice(DeviceType type) {
+        return devices.anySatisfy(device -> device.getType() == type);
+    }
+
+    @Override
+    public @Unmodifiable MutableMap<Direction, AttachableDevice> getDevices(DeviceType type) {
+        return devices.select((direction, device) -> device.getType() == type);
+    }
+
+    @Override
+    public @Nullable AttachableDevice getDevice(Direction direction) {
+        return devices.get(direction);
+    }
+
+    @Override
+    public @Unmodifiable MutableMap<Direction, AttachableDevice> allDevices() {
+        return devices.asUnmodifiable();
+    }
+
+    @Override
     public void addTrait(Direction direction, Trait trait) {
         traits.getIfAbsentPut(direction, Lists.mutable.withInitialCapacity(TRAIT_CAPACITY)).add(trait);
         if (online()) {
-            NetworkChannels<Trait> channel = getEffectiveNetwork().getChannel(trait.getHandleType());
+            NetworkChannels<Trait> channel = getNetwork().getChannel(trait.getHandleType());
             channel.addTrait(trait);
         }
     }
@@ -168,10 +195,6 @@ public class ConduitNetworkNode implements ConduitNode, NetworkNode {
         tag.put("NeighborNodes", neighborNodes);
         tag.put("RemoteNodes", remoteNodes);
 
-        int[] connectableDirections = tag.getIntArray("connectableDirections");
-        for (int i : connectableDirections) {
-            this.connectedDirections.add(Direction.from3DDataValue(i));
-        }
     }
 
     @Override
@@ -194,19 +217,11 @@ public class ConduitNetworkNode implements ConduitNode, NetworkNode {
             }
         }
 
-        tag.putIntArray("connectableDirections", connectedDirections.stream().mapToInt(Direction::get3DDataValue).toArray());
-    }
-
-    @Override
-    public void setConnectedDirections(Collection<Direction> directions) {
-        this.connectedDirections.clear();
-        this.connectedDirections.addAll(directions);
-        this.holder.connectionChange();
     }
 
     /////////////////////////////////////////////////////
     //********            ConduitNode         *********//
-    ////////////////////////////////////////////////////
+    /// /////////////////////////////////////////////////
 
 
     private boolean invalid;
@@ -215,12 +230,11 @@ public class ConduitNetworkNode implements ConduitNode, NetworkNode {
 
     private final MutableMap<Direction, ConduitNodeId> neighborNodes = Maps.mutable.empty();
     private final MutableSet<ConduitNodeId> remoteNodes = Sets.mutable.withInitialCapacity(1);
-    private final EnumSet<Direction> connectedDirections = EnumSet.noneOf(Direction.class);
 
     private ConduitNodeId nodeId;
 
     @Override
-    public ConduitNodeId conduitId() {
+    public ConduitNodeId getId() {
         if (this.nodeId == null) {
             var level = Objects.requireNonNull(this.getLevel());
             this.nodeId = new ConduitNodeId(level.dimension(), this.getPos());
@@ -294,7 +308,7 @@ public class ConduitNetworkNode implements ConduitNode, NetworkNode {
         if (holder.collectRemoteNodes(remoteNodes)) {
             for (ConduitNodeId remote : remoteNodes) {
                 ConduitNode neighborNode = this.findNodeAt(remote);
-                if (neighborNode == null || !neighborNode.acceptsRemote(this.conduitId())) {
+                if (neighborNode == null || !neighborNode.acceptsRemote(this.getId())) {
                     continue;
                 }
                 if (this.remoteNodes.contains(remote)) {
@@ -328,7 +342,7 @@ public class ConduitNetworkNode implements ConduitNode, NetworkNode {
             if (neighborNode == null) {
                 continue;
             }
-            ConduitNodeId neighborId = neighborNode.conduitId();
+            ConduitNodeId neighborId = neighborNode.getId();
             boolean trueNeighbor = getLevel().dimension().equals(neighborId.dimension()) && neighborPos.equals(neighborId.pos());
             if (!trueNeighbor) {
                 log.warn("Neighbor at {} is not next to {}", neighborPos, this.getPos());
@@ -337,7 +351,9 @@ public class ConduitNetworkNode implements ConduitNode, NetworkNode {
 
             if (neighborNode.acceptsNeighbor(direction.getOpposite())) {
                 neighborNodes.put(direction, neighborId);
-                added = true;
+                if (!this.neighborNodes.containsKey(direction)) {
+                    added = true;
+                }
             }
 
         }
@@ -346,7 +362,7 @@ public class ConduitNetworkNode implements ConduitNode, NetworkNode {
             this.neighborNodes.clear();
             this.neighborNodes.putAll(neighborNodes);
             scheduleNetwork(1);
-            setConnectedDirections(neighborNodes.keySet());
+            this.holder.connectionChange();
             return true;
         }
 
@@ -411,8 +427,8 @@ public class ConduitNetworkNode implements ConduitNode, NetworkNode {
                 valid = false;
                 break;
             }
-            if (!remoteNode.acceptsRemote(this.conduitId())) {
-                log.warn("Remote at {} does not accept connection from {}", remote, this.conduitId());
+            if (!remoteNode.acceptsRemote(this.getId())) {
+                log.warn("Remote at {} does not accept connection from {}", remote, this.getId());
                 valid = false;
                 break;
             }
@@ -445,7 +461,7 @@ public class ConduitNetworkNode implements ConduitNode, NetworkNode {
             }
 
             for (var neighborNeighbor : neighborNode.adjacentNodes()) {
-                if (neighborNeighbor.equals(this.conduitId())) {
+                if (neighborNeighbor.equals(this.getId())) {
                     continue outer;
                 }
             }
@@ -474,7 +490,7 @@ public class ConduitNetworkNode implements ConduitNode, NetworkNode {
 
     @Override
     public void scheduleNetwork(int delay) {
-        BaseNetwork network = this.getNetwork();
+        BaseNetwork network = this.getNetworkUnsafe();
         if (network != null) {
             network.destroy();
         }

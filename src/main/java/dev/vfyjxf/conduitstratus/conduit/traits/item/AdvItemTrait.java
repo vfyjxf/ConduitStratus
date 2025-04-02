@@ -1,8 +1,8 @@
 package dev.vfyjxf.conduitstratus.conduit.traits.item;
 
+import dev.vfyjxf.conduitstratus.api.conduit.TraitType;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.PoxyTrait;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;

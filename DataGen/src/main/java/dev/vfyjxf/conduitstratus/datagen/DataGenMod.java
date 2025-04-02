@@ -1,7 +1,7 @@
 package dev.vfyjxf.conduitstratus.datagen;
 
 import dev.vfyjxf.cloudlib.data.lang.LangKeyProvider;
-import dev.vfyjxf.conduitstratus.Constants;
+import dev.vfyjxf.conduitstratus.StratusConstants;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
@@ -14,7 +14,7 @@ public class DataGenMod {
 
     private void onGatherData(GatherDataEvent event) {
         var generator = event.getGenerator();
-        var modid = Constants.MOD_ID;
+        var modid = StratusConstants.MOD_ID;
         var includeClient = event.includeClient();
         var output = generator.getPackOutput();
         generator.addProvider(includeClient, new LangKeyProvider(modid, output));

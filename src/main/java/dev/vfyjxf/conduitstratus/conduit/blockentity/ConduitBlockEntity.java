@@ -2,7 +2,6 @@ package dev.vfyjxf.conduitstratus.conduit.blockentity;
 
 import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkBuilder;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
 import dev.vfyjxf.conduitstratus.blockentity.NetworkBlockEntity;
 import dev.vfyjxf.conduitstratus.client.models.ModelProperties;
 import dev.vfyjxf.conduitstratus.conduit.ConnectionState;
@@ -115,7 +114,7 @@ public class ConduitBlockEntity extends NetworkBlockEntity {
         return connectionState;
     }
 
-    public void addTrait(TraitType type, Direction side) {
+    public void addTrait(Direction side) {
         connectionState.addTrait(side);
         markForUpdate();
         markForSave();

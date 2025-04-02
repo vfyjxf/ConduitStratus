@@ -7,7 +7,10 @@ import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNode;
 import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNodeId;
 import dev.vfyjxf.conduitstratus.api.conduit.event.NetworkEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.io.LogisticManager;
-import dev.vfyjxf.conduitstratus.api.conduit.network.*;
+import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
+import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkChannels;
+import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
+import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkStatus;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
 import dev.vfyjxf.conduitstratus.init.StratusRegistryImpl;
 import dev.vfyjxf.conduitstratus.init.values.ModValues;
@@ -34,8 +37,7 @@ public final class ConduitNetwork implements Network {
 
     private static final int NORMAL_CAPACITY = 3;
 
-    private final EventChannel<NetworkEvent> eventChannelImpl = EventChannel.create(this);
-    private final MutableMap<NetworkServiceType<?>, NetworkService<?>> services = Maps.mutable.empty();
+    private final EventChannel<NetworkEvent> eventChannel = EventChannel.create(this);
     private final MutableMap<HandleType, TypedNetworkChannels<?>> channels = Maps.mutable.withInitialCapacity(NORMAL_CAPACITY);
 
     private final MutableMap<ConduitNodeId, ConduitNetworkNode> activeNodes;
@@ -85,23 +87,6 @@ public final class ConduitNetwork implements Network {
 
             conduitNode.setNetwork(this);
 
-//            BlockEntity blockEntity = level.getBlockEntity(pos);
-//
-//            if (!(blockEntity instanceof NetworkBlockEntity networkBlockEntity)) {
-//                logger.error("NetworkBlockEntity not found: {}", pos);
-//                continue;
-//            }
-//
-//            var node = (ConduitNetworkNode) networkBlockEntity.getNode();
-//
-//            if (node == null) {
-//                logger.error("NetworkNode not found: {}", pos);
-//                continue;
-//            }
-//
-//            node.setNetwork(this);
-//            activeNodes.put(nodeId, node);
-
         }
     }
 
@@ -124,27 +109,6 @@ public final class ConduitNetwork implements Network {
     @Override
     public boolean isEmpty() {
         return nodeIds.isEmpty();
-    }
-
-    @Override
-    public boolean hasService(NetworkServiceType<?> type) {
-        return services.containsKey(type);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T extends NetworkService<T>> T getService(NetworkServiceType<T> type) {
-        NetworkService<T> service = (NetworkService<T>) services.get(type);
-        if (service == null) {
-            throw new NullPointerException("Service not found: " + type);
-        }
-        return (T) service;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T extends NetworkService<T>> T getOrCreateService(NetworkServiceType<T> type) {
-        return (T) services.getIfAbsentPut(type, () -> type.factory().apply(this));
     }
 
     @Override
@@ -197,7 +161,6 @@ public final class ConduitNetwork implements Network {
         }
         destroyed = true;
         activeNodes.clear();
-        services.clear();
         channels.clear();
         nodeIds = null;
         distance = null;
@@ -220,6 +183,6 @@ public final class ConduitNetwork implements Network {
 
     @Override
     public EventChannel<NetworkEvent> events() {
-        return eventChannelImpl;
+        return eventChannel;
     }
 }

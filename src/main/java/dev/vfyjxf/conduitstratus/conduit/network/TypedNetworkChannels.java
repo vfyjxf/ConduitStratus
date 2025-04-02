@@ -125,7 +125,7 @@ public class TypedNetworkChannels<TRAIT extends Trait> implements NetworkChannel
     @Override
     public NetworkChannels<TRAIT> addTrait(TRAIT trait) {
         if (!accept(trait)) {
-            throw new IllegalArgumentException("The trait: " + trait + "of type:" + trait.getHandleType() + " is not accepted by the channel: " + trait);
+            throw new IllegalArgumentException("The trait: " + trait + "of type:" + trait.getHandleType() + " is not accepted by the channel: " + this);
         }
         if (!trait.getIO().doAny()) return this;
         //TODO:implement

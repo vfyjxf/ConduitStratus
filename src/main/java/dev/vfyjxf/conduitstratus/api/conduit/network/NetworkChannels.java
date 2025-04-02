@@ -3,7 +3,6 @@ package dev.vfyjxf.conduitstratus.api.conduit.network;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
 import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;

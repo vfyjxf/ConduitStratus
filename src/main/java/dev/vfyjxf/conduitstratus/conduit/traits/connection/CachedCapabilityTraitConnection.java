@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class CachedCapabilityTraitConnection<CAP> implements CapabilityConnection<CAP> {
 
+    private final Trait trait;
     private final ServerLevel level;
     private final Direction direction;
     private final BlockCapabilityCache<? extends CAP, ?> cache;
@@ -21,6 +22,7 @@ public class CachedCapabilityTraitConnection<CAP> implements CapabilityConnectio
     }
 
     public <C> CachedCapabilityTraitConnection(Trait trait, BlockCapability<? extends CAP, @Nullable C> token, @Nullable C context) {
+        this.trait = trait;
         this.level = trait.getLevel();
         Direction traitDirection = trait.getDirection();
         BlockPos nodePos = trait.getNode().getPos();
@@ -43,6 +45,11 @@ public class CachedCapabilityTraitConnection<CAP> implements CapabilityConnectio
     @Override
     public CAP getCapability() {
         return cache.getCapability();
+    }
+
+    @Override
+    public Trait trait() {
+        return trait;
     }
 
     @Override

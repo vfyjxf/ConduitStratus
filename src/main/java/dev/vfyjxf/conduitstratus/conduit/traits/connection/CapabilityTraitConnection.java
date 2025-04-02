@@ -4,19 +4,21 @@ import dev.vfyjxf.conduitstratus.api.conduit.trait.CapabilityConnection;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import org.jetbrains.annotations.Nullable;
 
 public class CapabilityTraitConnection<CAP> implements CapabilityConnection<CAP> {
 
-    private final Level level;
+    private final Trait trait;
+    private final ServerLevel level;
     private final BlockCapability<? extends CAP, ? extends @Nullable Object> token;
     private final BlockPos pos;
     private final Direction direction;
 
     public CapabilityTraitConnection(Trait trait, BlockCapability<? extends CAP, @Nullable Object> token) {
+        this.trait = trait;
         this.level = trait.getLevel();
         this.token = token;
         Direction traitDirection = trait.getDirection();
@@ -41,6 +43,11 @@ public class CapabilityTraitConnection<CAP> implements CapabilityConnection<CAP>
         }
     }
 
+
+    @Override
+    public Trait trait() {
+        return trait;
+    }
 
     @Override
     public <T, C> @Nullable T getCapability(BlockCapability<T, @Nullable C> capability, @Nullable C context) {

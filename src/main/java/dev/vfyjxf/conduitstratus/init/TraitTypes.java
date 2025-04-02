@@ -1,11 +1,11 @@
 package dev.vfyjxf.conduitstratus.init;
 
 import dev.vfyjxf.conduitstratus.api.conduit.HandleTypes;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitType;
 import dev.vfyjxf.conduitstratus.conduit.traits.fluid.FluidTrait;
 import dev.vfyjxf.conduitstratus.conduit.traits.item.ItemTrait;
 
-import static dev.vfyjxf.conduitstratus.utils.Locations.of;
+import static dev.vfyjxf.conduitstratus.utils.StratusLocations.of;
 
 public final class TraitTypes {
 

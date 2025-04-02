@@ -1,8 +1,11 @@
 package dev.vfyjxf.conduitstratus.api.conduit.network;
 
 import dev.vfyjxf.conduitstratus.api.conduit.ConduitEntity;
+import dev.vfyjxf.conduitstratus.api.conduit.DeviceType;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitType;
+import dev.vfyjxf.conduitstratus.api.conduit.connection.ConduitNodeId;
+import dev.vfyjxf.conduitstratus.api.conduit.device.AttachableDevice;
 import dev.vfyjxf.conduitstratus.api.conduit.trait.Trait;
-import dev.vfyjxf.conduitstratus.api.conduit.trait.TraitType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -15,12 +18,30 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Unmodifiable;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 
 @ApiStatus.NonExtendable
 public interface NetworkNode {
 
-    Network getEffectiveNetwork();
+    ConduitNodeId getId();
+
+    /**
+     * @return the effective network of this node
+     * @throws IllegalStateException if the network is not present or the network is invalid
+     * @see #online() to check if the network is valid
+     */
+    Network getNetwork();
+
+    /**
+     * @return whether the node is in a valid network
+     */
+    boolean online();
+
+    /**
+     * @return reverse of {@link #online()}
+     */
+    default boolean offline() {
+        return !online();
+    }
 
     ConduitEntity getHolder();
 
@@ -31,6 +52,19 @@ public interface NetworkNode {
     default ServerLevel getLevel() {
         return (ServerLevel) getHolder().getBlockEntity().getLevel();
     }
+
+    void addDevice(Direction direction, AttachableDevice device);
+
+    boolean hasDevice(DeviceType type);
+
+    @Unmodifiable
+    MutableMap<Direction, AttachableDevice> getDevices(DeviceType type);
+
+    @Nullable
+    AttachableDevice getDevice(Direction direction);
+
+    @Unmodifiable
+    MutableMap<Direction, AttachableDevice> allDevices();
 
     void addTrait(Direction direction, Trait trait);
 
@@ -58,5 +92,4 @@ public interface NetworkNode {
 
     void loadData(CompoundTag tag, HolderLookup.Provider registries);
 
-    void setConnectedDirections(Collection<Direction> directions);
 }

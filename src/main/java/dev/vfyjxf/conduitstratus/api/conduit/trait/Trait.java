@@ -1,36 +1,33 @@
 package dev.vfyjxf.conduitstratus.api.conduit.trait;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import dev.vfyjxf.cloudlib.api.data.DataAttachable;
 import dev.vfyjxf.cloudlib.api.event.EventHandler;
 import dev.vfyjxf.conduitstratus.api.conduit.Conduit;
 import dev.vfyjxf.conduitstratus.api.conduit.HandleType;
 import dev.vfyjxf.conduitstratus.api.conduit.TickStatus;
 import dev.vfyjxf.conduitstratus.api.conduit.TraitIO;
+import dev.vfyjxf.conduitstratus.api.conduit.TraitType;
+import dev.vfyjxf.conduitstratus.api.conduit.device.AttachableDevice;
 import dev.vfyjxf.conduitstratus.api.conduit.event.TraitEvent;
 import dev.vfyjxf.conduitstratus.api.conduit.network.ChannelColor;
 import dev.vfyjxf.conduitstratus.api.conduit.network.Network;
 import dev.vfyjxf.conduitstratus.api.conduit.network.NetworkNode;
-import dev.vfyjxf.conduitstratus.utils.LevelHelper;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
 /**
- * {@link Trait} defines the behavior of the interaction between the conduit and the block.
+ * C special type of {@link AttachableDevice} that can be attached to a {@link Conduit}.
+ * <p>
+ * C {@link Trait} defines the behavior of the interaction between the conduit and the block.
  */
 //TODO:Plugin System
-//TODO:Add identifier
-//TODO:Make Trait be a node attachment
-public interface Trait extends EventHandler<TraitEvent>, DataAttachable {
+public interface Trait extends EventHandler<TraitEvent>, AttachableDevice {
 
     TraitType getType();
 
@@ -41,8 +38,6 @@ public interface Trait extends EventHandler<TraitEvent>, DataAttachable {
     NetworkNode getNode();
 
     TickStatus getStatus();
-
-    String identifier();
 
     @CanIgnoreReturnValue
     @Contract("_ -> this")
@@ -57,7 +52,7 @@ public interface Trait extends EventHandler<TraitEvent>, DataAttachable {
     }
 
     default Network getNetwork() {
-        return getNode().getEffectiveNetwork();
+        return getNode().getNetwork();
     }
 
     default ServerLevel getLevel() {
@@ -98,18 +93,6 @@ public interface Trait extends EventHandler<TraitEvent>, DataAttachable {
     @CanIgnoreReturnValue
     @Contract("_ -> this")
     Trait setIO(TraitIO traitIO);
-
-    @Nullable
-    default BlockEntity getFacing() {
-        NetworkNode node = getNode();
-        Level level = node.getLevel();
-        BlockPos target = node.getPos().relative(getDirection());
-        return LevelHelper.getBlockEntity(level, target);
-    }
-
-    default BlockPos getFacingPos() {
-        return getNode().getPos().relative(getDirection());
-    }
 
     default boolean attachable(Conduit conduit) {
         return true;
