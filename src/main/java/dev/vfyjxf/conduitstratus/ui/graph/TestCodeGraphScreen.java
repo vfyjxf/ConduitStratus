@@ -4,11 +4,11 @@ import dev.vfyjxf.cloudlib.api.ui.layout.ColumnResizer;
 import dev.vfyjxf.cloudlib.api.ui.widgets.Widget;
 import dev.vfyjxf.cloudlib.api.ui.widgets.WidgetGroup;
 import dev.vfyjxf.cloudlib.helper.RenderHelper;
-import dev.vfyjxf.cloudlib.ui.BaseScreen;
+import dev.vfyjxf.cloudlib.api.ui.BasicScreen;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 
-public class TestCodeGraphScreen extends BaseScreen {
+public class TestCodeGraphScreen extends BasicScreen {
 
     private static final MutableList<String> testLabels = Lists.mutable.of(
             "add", "sub", "mul", "div", "mod", "and", "or",
