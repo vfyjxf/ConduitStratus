@@ -97,11 +97,12 @@ neoForge {
 
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
-            logLevel = org.slf4j.event.Level.DEBUG
+            logLevel = org.slf4j.event.Level.INFO
             if (isJetBrainsRuntime()) {
                 jvmArgument "-XX:+AllowEnhancedClassRedefinition"
                 jvmArgument "-XX:HotswapAgent=fatjar"
             }
+            systemProperty('terminal.jline', 'true')
         }
     }
 
@@ -124,6 +125,7 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
     localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
     implementation project(":CloudLib")
+    additionalRuntimeClasspath(compileOnly('org.appliedenergistics.yoga:yoga:1.0.0'))
     additionalRuntimeClasspath(compileOnly("org.eclipse.collections:eclipse-collections-api:11.1.0"))
     additionalRuntimeClasspath(compileOnly("org.eclipse.collections:eclipse-collections:11.1.0"))
 
