@@ -68,6 +68,7 @@ neoForge {
         client {
             client()
             gameDirectory = project.file('run-client')
+//            loadedMods = [mods.cloudlib]
         }
     }
 
